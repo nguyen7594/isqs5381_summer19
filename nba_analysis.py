@@ -19,16 +19,16 @@ file_1 = 'Seasons_Stats.csv'
 file_2 = 'NBA_All_Star_Games.csv'
 file_3 = 'NBA_All_Star_Games_addition.csv'
 # local file load
-file_path = 'C:/Users/nguye/Documents/TTU/5381/nba/'
-season_stat = pd.read_csv(file_path+file_1)
+file_path_local = 'C:/Users/nguye/Documents/TTU/5381/nba/'
+season_stat = pd.read_csv(file_path_local+file_1)
 season_stat.info()
-all_star_list = pd.read_csv(file_path+file_2)
+all_star_list = pd.read_csv(file_path_local+file_2)
 all_star_list.info()
-all_star_list_2 = pd.read_csv(file_path+file_3)
+all_star_list_2 = pd.read_csv(file_path_local+file_3)
 all_star_list_2.info()
 # github load
-file_path = 'https://raw.githubusercontent.com/nguyen7594/isqs5381_summer19nn/master/'
-def file_import(file_name,FILE_PATH=file_path):
+file_path_github = 'https://raw.githubusercontent.com/nguyen7594/isqs5381_summer19nn/master/'
+def file_import(file_name,FILE_PATH=file_path_github):
     csv_path = os.path.join(FILE_PATH,file_name)
     return pd.read_csv(csv_path)    
 season_stat = file_import(file_1)
@@ -36,8 +36,6 @@ all_star_list = file_import(file_2)
 all_star_list_2 = file_import(file_3)
 # first look
 season_stat.info()
-season_stat[season_stat['Year']>1991].info()
-season_stat.columns
 all_star_list.info()
 all_star_list_2.info()
 
@@ -78,8 +76,8 @@ vabs_selected_ss = ['Year','Player_','Tm','Pos','G','MP','Age','PTS','FG','FG%',
                   'FT','FT%','AST','AST%','BLK','BLK%',
                   'DRB','DRB%','ORB','ORB%','STL','STL%',
                   'TOV','TOV%','PF','WS']
-len(vabs_selected)
-season_stat = season_stat[vabs_selected]
+len(vabs_selected_ss)
+season_stat = season_stat[vabs_selected_ss]
 season_stat.info()
 ## Vabs used from all_star
 vabs_selected_as = ['Year','Player','Team','all_star']
@@ -119,12 +117,18 @@ season_stat_.loc[(season_stat_['Player_']=='Nick Van')&(season_stat_['Year']==19
 season_stat_.info()
 # fill others as 0
 season_stat_['all_star'].fillna(0,inplace=True)
+season_stat_.info()
 
 
 
-
-
-
+### Final csv file output
+vabs_selected_output = ['Year','Player_','Tm','Pos','G','MP','Age','PTS','FG','FG%','2P','2P%','3P','3P%',
+                  'FT','FT%','AST','AST%','BLK','BLK%',
+                  'DRB','DRB%','ORB','ORB%','STL','STL%',
+                  'TOV','TOV%','PF','WS','all_star']
+season_stat_ = season_stat_[vabs_selected_output]
+season_stat_.to_csv(os.path.join(file_path_local,r'nba_stat_merged.csv'),index=False)
+season_stat_.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'nba_stat_merged.csv'),index=False)
 
 
 #### --------------------------------------- ANALYSIS --------------------------------------------####
