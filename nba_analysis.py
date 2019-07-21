@@ -36,6 +36,8 @@ all_star_list = file_import(file_2)
 all_star_list_2 = file_import(file_3)
 # first look
 season_stat.info()
+season_stat[season_stat['Year']>1991].info()
+season_stat.columns
 all_star_list.info()
 all_star_list_2.info()
 
@@ -70,7 +72,21 @@ season_stat['Player_'] = season_stat['Player'].map(lambda x: remove_(x))
 
 ## REMOVE DUPLICATES: only keep TOT (team ~ 'Tm') stats (Total) record for players - players who were traded in mid-season
 season_stat.drop_duplicates(['Year','Player_'],inplace=True)
-        
+
+## Vabs used from season_stat
+vabs_selected_ss = ['Year','Player_','Tm','Pos','G','MP','Age','PTS','FG','FG%','2P','2P%','3P','3P%',
+                  'FT','FT%','AST','AST%','BLK','BLK%',
+                  'DRB','DRB%','ORB','ORB%','STL','STL%',
+                  'TOV','TOV%','PF','WS']
+len(vabs_selected)
+season_stat = season_stat[vabs_selected]
+season_stat.info()
+## Vabs used from all_star
+vabs_selected_as = ['Year','Player','Team','all_star']
+all_star = all_star[vabs_selected_as] 
+all_star.info()
+
+
 ## JOIN ALL_STAR WITH SEASON_STATS
 season_stat_ = pd.merge(season_stat,all_star,left_on=['Year','Player_'],right_on=['Year','Player'],how='left')
 season_stat_.info()
@@ -99,26 +115,30 @@ season_stat_.loc[(season_stat_['Player_']=='Clifford Robinson')&(season_stat_['Y
 season_stat_.loc[(season_stat_['Player_']=='Anfernee Hardaway')&(season_stat_['Year'].isin([1995,1996,1997,1998])),'all_star'] = 1 
 # Nick Van 1998 - 1
 season_stat_.loc[(season_stat_['Player_']=='Nick Van')&(season_stat_['Year']==1998),'all_star'] = 1 
-# double check the count:
+# double check the count: 866 + 1
 season_stat_.info()
 # fill others as 0
 season_stat_['all_star'].fillna(0,inplace=True)
 
 
-#### --------------------------------------- ANALYSIS --------------------------------------------####
-### DATA SELECTED
-## Vabs used
-vabs_selected = ['Year','Player_','G','MP','Age','PTS','FG','FG%','2P','2P%','3P','3P%',
-                  'FT','FT%','AST','AST%','BLK','BLK%',
-                  'DRB','DRB%','ORB','ORB%','STL','STL%',
-                  'TOV','TOV%','PF','all_star','WS','WS/48']
-season_stat_ = season_stat_[vabs_selected]
 
+
+
+
+
+
+#### --------------------------------------- ANALYSIS --------------------------------------------####
+### FINAL DATA SELECTED
 ## Because of limited time and many missing values from previous periods
 ## We only focus on analyzing the data from 1991-: First Chicago Bulls Championship
 ## Thus, our analysis is derived from data of 1991-2017 or Season '90-'91 - '16-'17
 season_stat_ =  season_stat_[season_stat_['Year']>1991]
 season_stat_.info()
+
+
+
+
+
 
  
  
