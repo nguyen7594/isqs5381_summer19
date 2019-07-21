@@ -105,6 +105,44 @@ season_stat_.info()
 season_stat_['all_star'].fillna(0,inplace=True)
 
 
+#### --------------------------------------- ANALYSIS --------------------------------------------####
+### DATA SELECTED
+## Vabs used
+vabs_selected = ['Year','Player_','G','MP','Age','PTS','FG','FG%','2P','2P%','3P','3P%',
+                  'FT','FT%','AST','AST%','BLK','BLK%',
+                  'DRB','DRB%','ORB','ORB%','STL','STL%',
+                  'TOV','TOV%','PF','all_star','WS','WS/48']
+season_stat_ = season_stat_[vabs_selected]
+
+## Because of limited time and many missing values from previous periods
+## We only focus on analyzing the data from 1991-: First Chicago Bulls Championship
+## Thus, our analysis is derived from data of 1991-2017 or Season '90-'91 - '16-'17
+season_stat_ =  season_stat_[season_stat_['Year']>1991]
+season_stat_.info()
+
+ 
+ 
+
+ 
+
+ 
+
+
+ 
+
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+
+ 
+
+
+
 
 
 
