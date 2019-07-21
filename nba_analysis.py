@@ -131,8 +131,15 @@ season_stat_.to_csv(os.path.join(file_path_local,r'nba_stat_merged.csv'),index=F
 season_stat_.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'nba_stat_merged.csv'),index=False)
 
 
+
+
+
 #### --------------------------------------- ANALYSIS --------------------------------------------####
 ### FINAL DATA SELECTED
+file_merged = 'nba_stat_merged.csv'
+nba_stats = file_import(file_merged)
+nba_stats.info()
+
 ## Because of limited time and many missing values from previous periods
 ## We only focus on analyzing the data from 1991-: First Chicago Bulls Championship
 ## Thus, our analysis is derived from data of 1991-2017 or Season '90-'91 - '16-'17
