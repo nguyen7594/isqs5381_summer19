@@ -32,12 +32,12 @@ def file_import(file_name,FILE_PATH=file_path):
     csv_path = os.path.join(FILE_PATH,file_name)
     return pd.read_csv(csv_path)    
 season_stat = file_import(file_1)
-season_stat.info()
 all_star_list = file_import(file_2)
-all_star_list.info()
 all_star_list_2 = file_import(file_3)
+# first look
+season_stat.info()
+all_star_list.info()
 all_star_list_2.info()
-
 
 
 ## MERGE 2 ALL_STAR FILES
@@ -56,7 +56,8 @@ all_star[all_star['Year'] == 2018].count()
 ## ALL_STAR SHORT_LIST
 all_star['all_star'] = 1
 all_star['all_star'].groupby(all_star['Year']).count()
-## REMOVE NA VALUES AND * AT THE END FOR SEASON_STAT
+
+## REMOVE NA VALUES AND * AT THE END FOR SEASON_STAT PLAYERS NAMES
 season_stat.dropna(subset=['Player'],inplace=True)
 
 def remove_(X):
@@ -66,7 +67,8 @@ def remove_(X):
         return X.strip()
     
 season_stat['Player_'] = season_stat['Player'].map(lambda x: remove_(x))
-## REMOVE DUPLICATES: only keep TOT (team ~ 'Tm') stats record for players
+
+## REMOVE DUPLICATES: only keep TOT (team ~ 'Tm') stats (Total) record for players - players who were traded in mid-season
 season_stat.drop_duplicates(['Year','Player_'],inplace=True)
         
 ## JOIN ALL_STAR WITH SEASON_STATS
