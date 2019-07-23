@@ -138,7 +138,7 @@ season_stat_.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'nba_st
 ### FINAL DATA SELECTED
 file_merged = 'nba_stat_merged.csv'
 nba_stats = file_import(file_merged)
-nba_stats.info()
+#nba_stats.info()
 
 ### REGRESSION ###
 ## Objective: predict the W/S of the next season
@@ -147,26 +147,27 @@ nba_stats.info()
 # Index for each players
 nba_stats.sort_values(['Player_','Year'],inplace=True)
 nba_stats['Index_p'] = nba_stats.groupby(['Player_']).cumcount()
+#nba_stats[['Player_','Year','Index_p']]
 nba_copy = nba_stats[['Player_','Index_p','WS']].copy()
 nba_copy['Index_p'] = nba_copy['Index_p']  - 1
 nba_copy.columns = ['Player_2','Index_p2','WS2']
 nba_stats = pd.merge(nba_stats,nba_copy,how='left',left_on=['Player_','Index_p'],right_on=['Player_2','Index_p2'])
-nba_stats[['Player_','Index_p','WS','Index_p2','WS2']].head(20)
-# Drop the last season of each players
-nba_stats_rm = nba_stats.dropna(subset=['WS2'])
+#nba_stats[['Player_','Index_p','WS','Index_p2','WS2']]
+# Drop the last season of each players or only 1-year players
+nba_stats_rm = nba_stats.dropna(subset=['WS2']).copy()
 #nba_stats_rm.info()
 nba_stats_rm.drop(['WS','Player_2','Index_p2','all_star','Index_p'],axis=1,inplace=True)
 
 
-## Because of limited time and many missing values from previous periods
+## Because of limited time for project and many missing values from previous periods
 ## We only focus on analyzing the data from 1987-2016: 30 years of basketball
 ## Thus, our analysis is derived from data of 1987-2016 or Season '86-'87 - '16-'17
 ## OR: use individual stats from '87-'16 to predict WS in '88-'17
 nba_8716 =  nba_stats_rm[nba_stats_rm['Year']>1986].copy()
 #nba_stats_rm[nba_stats_rm['Year']>1986].info()
-nba_8716.info()
-nba_8716.describe()
-nba_8716.hist()
+#nba_8716.info()
+#nba_8716.describe()
+#nba_8716.hist()
 # most total indicators e.g. pts, 2p, 3p, ... are right-skewed  
 # thus it is better to average these total indicators by Games played in given season  
 
@@ -181,9 +182,10 @@ for train_index, test_index in split.split(nba_8716,nba_8716['Year']):
 #strat_train_set.head()  
 #strat_test_set.info()  
 #strat_test_set.head()  
-nba_8716['Year'].value_counts()/len(nba_8716)
-strat_train_set['Year'].value_counts()/len(strat_train_set)
-strat_test_set['Year'].value_counts()/len(strat_test_set)
+#nba_8716['Year'].value_counts()/len(nba_8716)
+#strat_train_set['Year'].value_counts()/len(strat_train_set)
+#strat_test_set['Year'].value_counts()/len(strat_test_set)
+
 # Split training-validation sets as ratio 90-10, stratied by Year     
 split_train = StratifiedShuffleSplit(n_splits=1,test_size=0.1,random_state=25)  
 for ttrain_index, tvalid_index in split_train.split(strat_train_set,strat_train_set['Year']):
@@ -191,8 +193,13 @@ for ttrain_index, tvalid_index in split_train.split(strat_train_set,strat_train_
     tvalid_set = strat_train_set.iloc[tvalid_index]
 
 
-### EXPORT DATASETS TO WORK IN R
+### EXPORT DATASETS TO DEVELOP MODELS IN R ###
 # Training set
+ttrain_set.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'training_set.csv'),index=False)
+# Validation set
+tvalid_set.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'valid_set.csv'),index=False)
+# Test set
+strat_test_set.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'test_set.csv'),index=False)
 
     
 
