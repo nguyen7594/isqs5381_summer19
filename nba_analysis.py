@@ -20,12 +20,12 @@ file_2 = 'NBA_All_Star_Games.csv'
 file_3 = 'NBA_All_Star_Games_addition.csv'
 # local file load
 file_path_local = 'C:/Users/nguye/Documents/TTU/5381/nba/'
-season_stat = pd.read_csv(file_path_local+file_1)
-season_stat.info()
-all_star_list = pd.read_csv(file_path_local+file_2)
-all_star_list.info()
-all_star_list_2 = pd.read_csv(file_path_local+file_3)
-all_star_list_2.info()
+#season_stat = pd.read_csv(file_path_local+file_1)
+#season_stat.info()
+#all_star_list = pd.read_csv(file_path_local+file_2)
+#all_star_list.info()
+#all_star_list_2 = pd.read_csv(file_path_local+file_3)
+#all_star_list_2.info()
 # github load
 file_path_github = 'https://raw.githubusercontent.com/nguyen7594/isqs5381_summer19nn/master/'
 def file_import(file_name,FILE_PATH=file_path_github):
@@ -35,27 +35,27 @@ season_stat = file_import(file_1)
 all_star_list = file_import(file_2)
 all_star_list_2 = file_import(file_3)
 # first look
-season_stat.info()
-all_star_list.info()
-all_star_list_2.info()
+#season_stat.info()
+#all_star_list.info()
+#all_star_list_2.info()
 
 
 ## MERGE 2 ALL_STAR FILES
 all_star = pd.concat([all_star_list,all_star_list_2])
-all_star.info()
+#all_star.info()
 # Year is changed to the last half of season to match the season_stat
 all_star.Year = all_star.Year + 1
 # remove 1999 all star game: error - year without all-star
 all_star = all_star[all_star['Year'] != 1999]
 # 895 vabs
-all_star[all_star['Year'] == 2018].count()
+# all_star[all_star['Year'] == 2018].count()
 # 2018: 28 obs => rest = 895-28 = 867 obs
 
 
 ### JOIN SEASONS_STATS WITH ALL_STAR FILE FOR BEING ALL_STAR OR NOT
 ## ALL_STAR SHORT_LIST
 all_star['all_star'] = 1
-all_star['all_star'].groupby(all_star['Year']).count()
+#all_star['all_star'].groupby(all_star['Year']).count()
 
 ## REMOVE NA VALUES AND * AT THE END FOR SEASON_STAT PLAYERS NAMES
 season_stat.dropna(subset=['Player'],inplace=True)
@@ -76,25 +76,25 @@ vabs_selected_ss = ['Year','Player_','Tm','Pos','G','MP','Age','PTS','FG','FG%',
                   'FT','FT%','AST','AST%','BLK','BLK%',
                   'DRB','DRB%','ORB','ORB%','STL','STL%',
                   'TOV','TOV%','PF','WS']
-len(vabs_selected_ss)
+#len(vabs_selected_ss)
 season_stat = season_stat[vabs_selected_ss]
-season_stat.info()
+#season_stat.info()
 ## Vabs used from all_star
 vabs_selected_as = ['Year','Player','Team','all_star']
 all_star = all_star[vabs_selected_as] 
-all_star.info()
+#all_star.info()
 
 
 ## JOIN ALL_STAR WITH SEASON_STATS
 season_stat_ = pd.merge(season_stat,all_star,left_on=['Year','Player_'],right_on=['Year','Player'],how='left')
-season_stat_.info()
+#season_stat_.info()
 # 853 obs => 14 missing values from all_star
 
 # players would not be matchaed 
-left_out_ = pd.merge(season_stat,all_star,left_on=['Year','Player_'],right_on=['Year','Player'],how='right')
-left_out_.info()
+#left_out_ = pd.merge(season_stat,all_star,left_on=['Year','Player_'],right_on=['Year','Player'],how='right')
+#left_out_.info()
 # 14 not matched 
-left_out_[(left_out_['Player_x'].isnull())&(left_out_['Year']!=2018)][['Player_y','Year']]
+#left_out_[(left_out_['Player_x'].isnull())&(left_out_['Year']!=2018)][['Player_y','Year']]
 
 ## FILL MISSING VALUES FOR ALL_STAR vabs: 14 NAs
 # Metta World 2004 - 1
@@ -114,10 +114,10 @@ season_stat_.loc[(season_stat_['Player_']=='Anfernee Hardaway')&(season_stat_['Y
 # Nick Van 1998 - 1
 season_stat_.loc[(season_stat_['Player_']=='Nick Van')&(season_stat_['Year']==1998),'all_star'] = 1 
 # double check the count: 866 + 1
-season_stat_.info()
+#season_stat_.info()
 # fill others as 0
 season_stat_['all_star'].fillna(0,inplace=True)
-season_stat_.info()
+#season_stat_.info()
 
 
 
@@ -127,7 +127,7 @@ vabs_selected_output = ['Year','Player_','Tm','Pos','G','MP','Age','PTS','FG','F
                   'DRB','DRB%','ORB','ORB%','STL','STL%',
                   'TOV','TOV%','PF','WS','all_star']
 season_stat_ = season_stat_[vabs_selected_output]
-season_stat_.to_csv(os.path.join(file_path_local,r'nba_stat_merged.csv'),index=False)
+#season_stat_.to_csv(os.path.join(file_path_local,r'nba_stat_merged.csv'),index=False)
 season_stat_.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'nba_stat_merged.csv'),index=False)
 
 
@@ -191,7 +191,12 @@ for ttrain_index, tvalid_index in split_train.split(strat_train_set,strat_train_
     tvalid_set = strat_train_set.iloc[tvalid_index]
 
 
-### Discover and visualize the data to get insights
+### EXPORT DATASETS TO WORK IN R
+# Training set
+
+    
+
+
     
 
 
