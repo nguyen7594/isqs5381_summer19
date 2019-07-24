@@ -46,8 +46,9 @@ colSums(is.na(set_x))
 set_x[is.na(set_x)] <- 0
 
 # Position 
-A <- c('PG-SF','C')
-str_split(A,'-')
+unique(set_x$Pos)
+set_x[,"Pos"]%>%
+  
 
 
 #cor bw WS and predictor variables
