@@ -170,6 +170,10 @@ nba_8716 =  nba_stats_rm[nba_stats_rm['Year']>1986].copy()
 #nba_8716.hist()
 # most total indicators e.g. pts, 2p, 3p, ... are right-skewed  
 # thus it is better to average these total indicators by Games played in given season  
+### EXPORT DATASETS TO DEVELOP MODELS IN R ###
+# All set    
+nba_8716.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'nba_8716.csv'),index=False)
+
 
 ## Split training-test sets as ratio of 80-20, stratied by Year 
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -193,13 +197,7 @@ for ttrain_index, tvalid_index in split_train.split(strat_train_set,strat_train_
     tvalid_set = strat_train_set.iloc[tvalid_index]
 
 
-### EXPORT DATASETS TO DEVELOP MODELS IN R ###
-# Training set
-ttrain_set.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'training_set.csv'),index=False)
-# Validation set
-tvalid_set.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'valid_set.csv'),index=False)
-# Test set
-strat_test_set.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'test_set.csv'),index=False)
+ 
 
     
 
