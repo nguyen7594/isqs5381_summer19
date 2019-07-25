@@ -108,18 +108,25 @@ test_ydf <- set_y[test_index,]
 
 
 #cor bw WS and predictor variables
-cor_xy <- cor(train_y,train_x[,-c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C')],use='pairwise.complete.obs')
+cor_xy <- cor(train_ydf,train_xdf)
+names(train_xdf)
 cor_xy
 corrplot(cor_xy)
 #cor bw predictor variables
-cor_x <- cor(train_x[,-1],use='pairwise.complete.obs')
-cor_x
+cor_x <- cor(train_x)
 corrplot(cor_x)
 
 
 ##Visualization
-ggplot(train_set,aes(PTS,WS2))+
-  geom_jitter(aes(size=PF))
+vis_train <- all_set[train_index,]
+for (i in ave_col){
+  vis_train[,i] <- vis_train[,i]/vis_train$G
+}
+
+vis_train %>%
+  filter(PTS>5,Pos=='PG')%>%
+  ggplot(aes(`3P%`,WS2))+
+  geom_jitter(aes(size=FG))
 
 
 
