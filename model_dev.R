@@ -11,6 +11,7 @@ library(caret)
 library(factoextra)
 library(stringr)
 library(forecast)
+library(rpart)
 
 set.seed(1234)
 ## Import csv files
