@@ -16,7 +16,7 @@ path = '~/TTU/5381/nba/isqs5381_summer19nn/'
 all_set <- read_csv(paste0(path,'nba_8716.csv'))
 #head(all_set)
 #str(train_set)
-dim(all_set)
+#dim(all_set)
 # Vabs chosen for x and y
 vab_x <- c("Pos","G","MP","Age","PTS","FG","FG%",
            "2P","2P%","3P","3P%","FT","FT%","AST","AST%",
@@ -40,8 +40,13 @@ for (i in ave_col){
     set_x[,i] <- set_x[,i]/set_x$G
   }
  
-head(set_x)
-#head(train_x)
+
+# New variables
+# Points Per field goal attempts
+set_x$PTS_AT <- set_x$PTS/(set_x$FG/set_x$`FG%`)  
+set_x <- set_x%>%
+  select(-c(FG,PTS,`FG%`))
+#head(set_x)
 
 #Missing values
 colSums(is.na(set_x))
@@ -66,7 +71,8 @@ sepPos[(sepPos$set_x.Pos_1=='PF')|(sepPos$set_x.Pos_2=='PF'),'pos.PF']<-1
 sepPos[(sepPos$set_x.Pos_1=='C')|(sepPos$set_x.Pos_2=='C'),'pos.C']<-1
 #head(sepPos)
 set_x <- data.frame(set_x[,-1],sepPos[,c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C')])
-names(set_x)
+#names(set_x)
+
 
 ### Split the training-valid-set
 set.seed(1234)
@@ -77,10 +83,10 @@ df <- df[df_index,]
 #head(df)
 trainvalid_ <-  createDataPartition(df$all_set.Year, times = 1, p = 0.8, list = FALSE)
 # test data index
-test_index <- df[-train_x_index,]$X1.nrow.set_x.
+test_index <- df[-trainvalid_,]$X1.nrow.set_x.
 #head(test_index)
 # train-valid data index
-trainvalid_index <- data.frame(index=df[train_x_index,]$X1.nrow.set_x.,year=df[train_x_index,]$all_set.Year)
+trainvalid_index <- data.frame(index=df[trainvalid_,]$X1.nrow.set_x.,year=df[trainvalid_,]$all_set.Year)
 #head(trainvalid_index)
 train_ <- createDataPartition(trainvalid_index$year, times = 1, p = 0.8, list = FALSE)
 # train index
@@ -105,15 +111,12 @@ test_ydf <- set_y[test_index,]
 #nrow(test_xdf)
 
 
-
-
+## Correlation matrices 
 #cor bw WS and predictor variables
 cor_xy <- cor(train_ydf,train_xdf)
-names(train_xdf)
-cor_xy
 corrplot(cor_xy)
 #cor bw predictor variables
-cor_x <- cor(train_x)
+cor_x <- cor(train_xdf)
 corrplot(cor_x)
 
 
@@ -122,12 +125,59 @@ vis_train <- all_set[train_index,]
 for (i in ave_col){
   vis_train[,i] <- vis_train[,i]/vis_train$G
 }
+vis_train$pri_pos <- sepPos[train_index,]$set_x.Pos_1 
+vis_train$PTS_AT <- vis_train$PTS/(vis_train$FG/vis_train$`FG%`)  
+#sum(is.na(vis_train$WS2))
+#names(vis_train)
+#head(vis_train[,c('PTS_AT','WS2')])
+
+# PTS/AT distribution
+vis_train %>%
+  ggplot(aes(PTS_AT))+
+  geom_histogram()+
+  facet_wrap(~pri_pos)+
+  xlim(c(0,2))
 
 vis_train %>%
-  filter(PTS>5,Pos=='PG')%>%
-  ggplot(aes(`3P%`,WS2))+
-  geom_jitter(aes(size=FG))
+  ggplot(aes(pri_pos,PTS_AT))+
+  geom_boxplot()
 
+# PTS/AT v. WS2
+vis_train %>%
+  filter(PTS>15,MP>15)%>%
+  ggplot(aes(PTS_AT,WS2))+
+  geom_jitter(aes(size=FG,col=pri_pos),alpha=0.5)
 
+  
+# PTS/AT v. WS2 by positions
+#2P
+vis_train %>%
+  filter(PTS>15,MP>15)%>%
+  ggplot(aes(PTS_AT,WS2))+
+  geom_jitter(aes(size=`2P`),alpha=0.4)+
+  facet_wrap(~pri_pos)
+#3P
+vis_train %>%
+  filter(PTS>15,MP>15)%>%
+  ggplot(aes(PTS_AT,WS2))+
+  geom_jitter(aes(size=`3P`),alpha=0.4)+
+  facet_wrap(~pri_pos)
+
+  
+# 3P%  by positions
+vis_train %>%
+  filter(PTS>10,MP>15)%>%
+  ggplot(aes(pri_pos,`3P%`))+
+  geom_boxplot()
+
+# AST v. PTS 
+vis_train %>%
+  filter(MP>15)%>%
+  ggplot(aes(AST,PTS))+
+  geom_jitter(aes(size=WS2),alpha=0.2)+
+  facet_wrap(~pri_pos)
 
 ## Dimensional Reduction
+x_pca <- princomp(train_xdf[train_xdf$MP>20,],cor=T)
+summary(x_pca,loadings=T)
+biplot(x_pca)
