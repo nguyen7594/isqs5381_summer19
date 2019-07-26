@@ -249,12 +249,12 @@ summary(lm_nba)
 pred_lm_train <- predict(lm_nba,train_norm_xdf)
 accuracy(pred_lm_train,valid_ydf$WS2)
 #ME    RMSE    MAE MPE MAPE
-#Test set -0.08077606 4.03593 3.0282 NaN  Inf
+#-0.08077606 4.03593 3.0282 NaN  Inf
 # test on valid data
 pred_lm_valid <- predict(lm_nba,valid_norm_xdf)
 accuracy(pred_lm_valid,valid_ydf$WS2)
 #ME     RMSE     MAE MPE MAPE
-#Test set -0.02966197 2.174304 1.65519 NaN  Inf
+#-0.02966197 2.174304 1.65519 NaN  Inf
 
 
 ## GRADIENT DESCENT ##
@@ -265,18 +265,53 @@ accuracy(pred_lm_valid,valid_ydf$WS2)
 
 
 ## REGRESSION TREE ##
+set.seed(1234)
 tree_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
-                method='M5',
+                method='rpart',
                 trControl = trainControl(
                   method = 'cv',number = 10,
                   verboseIter = TRUE
                 ))
+# test on training data
+pred_tree_train <- predict(tree_nba,train_norm_xdf)
+accuracy(pred_tree_train,valid_ydf$WS2)
+#ME     RMSE      MAE  MPE MAPE
+#-0.06818844 3.768866 2.836188 -Inf  Inf
+# test on valid data
+pred_tree_valid <- predict(tree_nba,valid_norm_xdf)
+accuracy(pred_tree_valid,valid_ydf$WS2)
+#ME     RMSE    MAE  MPE MAPE
+#-0.006433537 2.585309 1.9921 -Inf  Inf
 
-# RANDOM FOREST #
+
+
+## RANDOM FOREST ##
+set.seed(1234)
 rf_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
-                  method='rf',
+                  method='rf',importance=TRUE,
                   trControl = trainControl(
                     method = 'cv',number = 10,
                     verboseIter = TRUE
                   ))
+set.seed(1234)
+rf_nba_2 <- randomForest(WS2~.,cbind(train_ydf,train_norm_xdf),importance=TRUE)
+varImpPlot(rf_nba_2,type=1)
+# test on training data
+pred_rf_train <- predict(rf_nba,train_norm_xdf)
+accuracy(pred_rf_train,valid_ydf$WS2)
+#ME     RMSE      MAE MPE MAPE
+#-0.06728697 4.228946 3.105733 NaN  Inf
+# test on valid data
+pred_rf_valid <- predict(rf_nba,valid_norm_xdf)
+accuracy(pred_rf_valid,valid_ydf$WS2)
+#ME     RMSE      MAE  MPE MAPE
+#-0.08025988 2.112688 1.594136 -Inf  Inf
+# Without Cross-validation
+pred_rf_valid <- predict(rf_nba_2,valid_norm_xdf)
+accuracy(pred_rf_valid,valid_ydf$WS2)
+#ME   RMSE      MAE  MPE MAPE
+#Test set -0.07897587 2.1118 1.595947 -Inf  Inf
+
+
+## NEURAL NET ##
 
