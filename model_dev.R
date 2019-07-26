@@ -12,6 +12,8 @@ library(factoextra)
 library(stringr)
 library(forecast)
 library(rpart)
+library(randomForest)
+
 
 set.seed(1234)
 ## Import csv files
@@ -207,17 +209,29 @@ fviz_cluster(km, data = scaled_train_xdf_dm,
 #### MODEL ####
 #names(train_xdf)
 #names(train_ydf)
+
 ## Data scaling
 norm_values <- preProcess(train_xdf,method=c('range')) 
 train_norm_xdf <- predict(norm_values,train_xdf)
 valid_norm_xdf <- predict(norm_values,valid_xdf)
 ## WS2 ##
 summary(train_ydf$WS2)
+#Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#-1.600   0.500   2.200   3.097   4.700  21.200 
 hist(train_ydf$WS2)
 sd(train_ydf$WS2)
+# 3.231
+summary(valid_ydf$WS2)
+#Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#-1.200   0.500   2.300   3.079   4.700  19.000 
+sd(valid_ydf$WS2)
+# 3.204
+
+
+
 
 ## LINEAR REGRESSION ##
-lm_nba <- lm(WS2 ~ .,data=cbind(train_ydf,train_norm_xdf))
+#lm_nba <- lm(WS2 ~ .,data=cbind(train_ydf,train_norm_xdf))
 lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                 method='lm',
                 trControl = trainControl(
@@ -231,12 +245,16 @@ lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
     #              verboseIter = TRUE, repeats=5
      #           ))
 summary(lm_nba)
+# test on training data
+pred_lm_train <- predict(lm_nba,train_norm_xdf)
+accuracy(pred_lm_train,valid_ydf$WS2)
+#ME    RMSE    MAE MPE MAPE
+#Test set -0.08077606 4.03593 3.0282 NaN  Inf
 # test on valid data
-pred_lm <- predict(lm_nba,valid_norm_xdf)
-accuracy(pred_lm,valid_ydf$WS2)
+pred_lm_valid <- predict(lm_nba,valid_norm_xdf)
+accuracy(pred_lm_valid,valid_ydf$WS2)
 #ME     RMSE     MAE MPE MAPE
 #Test set -0.02966197 2.174304 1.65519 NaN  Inf
-
 
 
 ## GRADIENT DESCENT ##
@@ -244,4 +262,21 @@ accuracy(pred_lm,valid_ydf$WS2)
 
 
 
+
+
 ## REGRESSION TREE ##
+tree_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                method='M5',
+                trControl = trainControl(
+                  method = 'cv',number = 10,
+                  verboseIter = TRUE
+                ))
+
+# RANDOM FOREST #
+rf_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                  method='rf',
+                  trControl = trainControl(
+                    method = 'cv',number = 10,
+                    verboseIter = TRUE
+                  ))
+
