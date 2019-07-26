@@ -8,7 +8,9 @@ library(stringr)
 #install.packages('splitstackshape')
 library(splitstackshape)
 library(caret)
-
+library(factoextra)
+library(stringr)
+library(forecast)
 
 set.seed(1234)
 ## Import csv files
@@ -177,7 +179,68 @@ vis_train %>%
   geom_jitter(aes(size=WS2),alpha=0.2)+
   facet_wrap(~pri_pos)
 
+
 ## Dimensional Reduction
-x_pca <- princomp(train_xdf[train_xdf$MP>20,],cor=T)
+# not suitable for dimensional reduction when there is low correlations
+# between predictor variables
+train_xdf_dm <- train_xdf
+train_xdf_dm$TOV. <- max(train_xdf_dm$TOV.)- train_xdf_dm$TOV. 
+train_xdf_dm$PF <- max(train_xdf_dm$PF)- train_xdf_dm$PF 
+scaled_train_xdf_dm <- scale(train_xdf_dm)
+rownames(scaled_train_xdf_dm) <- str_c(all_set[train_index,]$Player_,all_set[train_index,]$Year,sep="-")
+head(scaled_train_xdf_dm)
+# PCA
+x_pca <- princomp(scaled_train_xdf_dm[train_xdf_dm$PTS_AT>1,],cor=T)
 summary(x_pca,loadings=T)
 biplot(x_pca)
+# K-mean clustering
+fviz_nbclust(scaled_train_xdf_dm, kmeans, method = "wss") +
+  geom_vline(xintercept = 3, linetype = 2,color='red')
+km <- kmeans(scaled_train_xdf_dm, centers = 3, nstart = 30) 
+fviz_cluster(km, data = scaled_train_xdf_dm,
+             ellipse.type = "norm", repel = FALSE, labelsize = 13
+)
+
+
+
+#### MODEL ####
+#names(train_xdf)
+#names(train_ydf)
+## Data scaling
+norm_values <- preProcess(train_xdf,method=c('range')) 
+train_norm_xdf <- predict(norm_values,train_xdf)
+valid_norm_xdf <- predict(norm_values,valid_xdf)
+## WS2 ##
+summary(train_ydf$WS2)
+hist(train_ydf$WS2)
+sd(train_ydf$WS2)
+
+## LINEAR REGRESSION ##
+lm_nba <- lm(WS2 ~ .,data=cbind(train_ydf,train_norm_xdf))
+lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                method='lm',
+                trControl = trainControl(
+                  method = 'cv',number = 10,
+                  verboseIter = TRUE
+                ))
+#lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+ #               method='lm',
+  #              trControl = trainControl(
+   #               method = 'repeatedcv',number = 10,
+    #              verboseIter = TRUE, repeats=5
+     #           ))
+summary(lm_nba)
+# test on valid data
+pred_lm <- predict(lm_nba,valid_norm_xdf)
+accuracy(pred_lm,valid_ydf$WS2)
+#ME     RMSE     MAE MPE MAPE
+#Test set -0.02966197 2.174304 1.65519 NaN  Inf
+
+
+
+## GRADIENT DESCENT ##
+
+
+
+
+## REGRESSION TREE ##
