@@ -13,6 +13,7 @@ library(stringr)
 library(forecast)
 library(rpart)
 library(randomForest)
+library(neuralnet)
 
 
 set.seed(1234)
@@ -301,6 +302,11 @@ pred_rf_train <- predict(rf_nba,train_norm_xdf)
 accuracy(pred_rf_train,valid_ydf$WS2)
 #ME     RMSE      MAE MPE MAPE
 #-0.06728697 4.228946 3.105733 NaN  Inf
+# Without Cross-validation
+pred_rf_valid <- predict(rf_nba_2,train_norm_xdf)
+accuracy(pred_rf_valid,train_ydf$WS2)
+#ME      RMSE       MAE  MPE MAPE
+#-0.01893074 0.8743806 0.6472731 -Inf  Inf
 # test on valid data
 pred_rf_valid <- predict(rf_nba,valid_norm_xdf)
 accuracy(pred_rf_valid,valid_ydf$WS2)
@@ -309,9 +315,28 @@ accuracy(pred_rf_valid,valid_ydf$WS2)
 # Without Cross-validation
 pred_rf_valid <- predict(rf_nba_2,valid_norm_xdf)
 accuracy(pred_rf_valid,valid_ydf$WS2)
-#ME   RMSE      MAE  MPE MAPE
-#Test set -0.07897587 2.1118 1.595947 -Inf  Inf
+#ME     RMSE      MAE  MPE MAPE
+#-0.07844664 2.109372 1.593878 -Inf  Inf
 
 
 ## NEURAL NET ##
+set.seed(1234)
+nn_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                method='neuralnet',
+                trControl = trainControl(
+                  method = 'cv',number = 10,
+                  verboseIter = TRUE
+                ))
+set.seed(1234)
+nn <- neuralnet(WS2 ~ .,data=cbind(train_ydf,train_norm_xdf))
+plot(nn)                
+pred <- compute(nn,train_norm_xdf)
+accuracy(pred$net.result[,1],train_ydf$WS2)
+#ME     RMSE      MAE  MPE MAPE
+#1.341957e-06 2.104113 1.557092 -Inf  Inf
+pred <- compute(nn,valid_norm_xdf)
+accuracy(pred$net.result[,1],valid_ydf$WS2)
+#ME     RMSE     MAE  MPE MAPE
+#-0.02311338 2.090387 1.55887 -Inf  Inf
+
 
