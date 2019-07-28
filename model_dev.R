@@ -258,7 +258,8 @@ accuracy(pred_lm_valid,valid_ydf$WS2)
 #-0.02966197 2.174304 1.65519 NaN  Inf
 
 
-## GRADIENT DESCENT ##
+## STOCHASTIC GRADIENT DESCENT ##
+
 
 
 
@@ -339,4 +340,12 @@ accuracy(pred$net.result[,1],valid_ydf$WS2)
 #ME     RMSE     MAE  MPE MAPE
 #-0.02311338 2.090387 1.55887 -Inf  Inf
 
+
+
+
+
+
+
+
+## FINAL MODEL ##
 

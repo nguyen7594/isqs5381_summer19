@@ -10,6 +10,8 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import StratifiedShuffleSplit
+
 
 ### IMPORT CSV FILES
 ### CONTAIN FROM (1982-1983)-(2016-2017), YEAR VAB WILL BE ASSIGNED AS THE LAST YEAR OF THAT SEASON
@@ -176,7 +178,6 @@ nba_8716.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'nba_8716.c
 
 
 ## Split training-test sets as ratio of 80-20, stratied by Year 
-from sklearn.model_selection import StratifiedShuffleSplit
 split = StratifiedShuffleSplit(n_splits=1,test_size=0.2,random_state=25)  
 for train_index, test_index in split.split(nba_8716,nba_8716['Year']):
     strat_train_set = nba_8716.iloc[train_index]
@@ -197,13 +198,85 @@ for ttrain_index, tvalid_index in split_train.split(strat_train_set,strat_train_
     tvalid_set = strat_train_set.iloc[tvalid_index]
 
 
+
+#### DATA VISUALIZATION ####
+
+
+
+
+
+
+
+#### DATA CLEANING ####
+## Feature selection ##
+num_feature_names = ["G","MP","Age","PTS","FG","FG%",
+           "2P","2P%","3P","3P%","FT","FT%","AST","AST%",
+           "BLK","BLK%","DRB","DRB%","ORB","ORB%","STL","STL%",
+           "TOV%","PF"]
+cat_feature_names = ['Pos']
+
+from sklearn.base import BaseEstimator, TransformerMixin
+
+class xdfselector(BaseEstimator,TransformerMixin):
+    def __init__(self,feature_names):
+        self._feature_names = feature_names
+    def fit(self,X,y=None):
+        return self
+    def transform(self,X,y=None):
+        return X[self._feature_names]
+
+## Average some variables:
+ave_feature = ["MP","PTS","FG",
+              "2P","3P","FT","AST",
+              "BLK","DRB","ORB","STL","PF"]
+        
+class ave_xvab(BaseEstimator,TransformerMixin):
+    def __init__(self,ave_feature):
+        self._ave_feature = ave_feature
+    def fit(self,X,y=None):
+        return self
+    def transform(self,X,y=None):
+        X.loc[:,self._ave_feature] = X.loc[:,self._ave_feature]/X.loc[:,"G"]
+        return X
+    
+## Create Dummy variables for Position - Pos
+#class dummy_pos(BaseEstimator,TransformerMixin):
+#    def __init__(self):
+#        self._pos = ['PG','SG','SF','PF','C']
+#    def fit(self,X,y=None):
+#        return self
+#    def transform(self,X,y=None):
+#        for i in self._pos:
+#            X.assign(i=0)
+#        for i, pos in enumerate(X.Pos):
+#            indices = X.columns.get_indexer(pos.split('-'))
+#            X.iloc[i,indices] = 1
+#        return X   
+from sklearn.preprocessing import MultiLabelBinarizer
+multi = MultiLabelBinarizer(classes=['PG','SG','SF','PF','C'])
+multi.fit_transform(ttrain_set['Pos'])
+ttrain_set['Pos'].head()
  
+       
+## Pipeline
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MinMaxScaler        
+from sklearn.impute import SimpleImputer
 
+num_pipeline = Pipeline([('features_select',xdfselector(num_feature_names)),
+                         ('average_values',ave_xvab(ave_feature)),
+                         ('missing_values',SimpleImputer(strategy='constant',fill_value=0)),
+                         ('feature_range',MinMaxScaler())])    
+cat_pipeline = Pipeline([('features_select',xdfselector(cat_feature_names)),
+                         ('dummy_variables',MultiLabelBinarizer()),
+                         ('missing_values',SimpleImputer(strategy='constant',fill_value=0))])    
+from sklearn.pipeline import FeatureUnion    
+cat_pipeline.fit_transform(ttrain_set)
+preprocess_pipeline=FeatureUnion(transformer_list=[
+        ('num_pipeline',num_pipeline),
+        ('cat_pipeline',cat_pipeline)])
     
-
-
-    
-
+x_train = preprocess_pipeline.fit_transform(ttrain_set)   
 
 
 
