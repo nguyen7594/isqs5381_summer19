@@ -16,6 +16,8 @@ library(neuralnet)
 # Stochastic Gradient Boosting
 library(gbm)
 library(plyr)
+library(e1071)
+library(kernlab)
 
 set.seed(1234)
 ## Import csv files
@@ -79,6 +81,11 @@ sepPos[(sepPos$set_x.Pos_1=='C')|(sepPos$set_x.Pos_2=='C'),'pos.C']<-1
 #head(sepPos)
 set_x <- data.frame(set_x[,-1],sepPos[,c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C')])
 #names(set_x)
+summary(set_x)
+summary(set_y)
+
+
+
 
 
 ### Split the training-valid-set
@@ -230,8 +237,8 @@ sd(valid_ydf$WS2)
 # 3.204
 
 
-
-
+#### MODEL CANDIDATES ####
+#(1)
 ## LINEAR REGRESSION ##
 #lm_nba <- lm(WS2 ~ .,data=cbind(train_ydf,train_norm_xdf))
 lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
@@ -259,6 +266,7 @@ accuracy(pred_lm_valid,valid_ydf$WS2)
 #-0.02966197 2.174304 1.65519 NaN  Inf
 
 
+# (2)
 ## STOCHASTIC GRADIENT DESCENT ##
 set.seed(1234)
 sgd_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
@@ -279,6 +287,7 @@ accuracy(pred_sgd_valid,valid_ydf$WS2)
 #-0.02704274 2.11007 1.586871 -Inf  Inf
 
 
+# (3)
 ## REGRESSION TREE ##
 set.seed(1234)
 tree_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
@@ -298,13 +307,52 @@ accuracy(pred_tree_valid,valid_ydf$WS2)
 #ME     RMSE    MAE  MPE MAPE
 #-0.006433537 2.585309 1.9921 -Inf  Inf
 
+
+# (4)
 ## SUPPORT VECTOR MACHINE ##
 # Linear SVM #
 set.seed(1234)
+linear_svm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                        method='svmLinear',
+                        trControl = trainControl(
+                          method = 'cv',number = 10,
+                          verboseIter = TRUE
+                        ))
+# test on training data
+pred_linear_svm_train <- predict(linear_svm_nba,train_norm_xdf)
+accuracy(pred_sgd_train,valid_ydf$WS2)
+#ME     RMSE      MAE  MPE MAPE
+#-0.09899623 4.089584 3.005164 -Inf  Inf
+# test on valid data
+pred_linear_svm_valid <- predict(linear_svm_nba,valid_norm_xdf)
+accuracy(pred_linear_svm_valid,valid_ydf$WS2)
+#ME    RMSE      MAE MPE MAPE
+#0.1488996 2.17501 1.628424 NaN  Inf
 
 
+# (5)
+## SUPPORT VECTOR MACHINE ##
+# Non-Linear SVM #
+set.seed(1234)
+poly_svm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                        method='svmPoly',
+                        trControl = trainControl(
+                          method = 'cv',number = 10,
+                          verboseIter = TRUE
+                        ))
+# test on training data
+pred_poly_svm_train <- predict(poly_svm_nba,train_norm_xdf)
+accuracy(pred_poly_svm_train,valid_ydf$WS2)
+#ME     RMSE      MAE MPE MAPE
+#0.09853416 4.170597 3.052577 NaN  Inf
+# test on valid data
+pred_polyr_svm_valid <- predict(poly_svm_nba,valid_norm_xdf)
+accuracy(pred_polyr_svm_valid,valid_ydf$WS2)
+#ME     RMSE      MAE MPE MAPE
+#0.1408907 2.064397 1.520059 NaN  Inf
 
 
+# (6)
 ## RANDOM FOREST ##
 set.seed(1234)
 rf_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
@@ -339,6 +387,7 @@ accuracy(pred_rf_valid,valid_ydf$WS2)
 #-0.07844664 2.109372 1.593878 -Inf  Inf
 
 
+# (7)
 ## NEURAL NET ##
 set.seed(1234)
 nn_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
