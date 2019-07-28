@@ -5,7 +5,6 @@ library(ggplot2)
 library(corrplot)
 library(purrr)
 library(stringr)
-#install.packages('splitstackshape')
 library(splitstackshape)
 library(caret)
 library(factoextra)
@@ -14,7 +13,9 @@ library(forecast)
 library(rpart)
 library(randomForest)
 library(neuralnet)
-
+# Stochastic Gradient Boosting
+library(gbm)
+library(plyr)
 
 set.seed(1234)
 ## Import csv files
@@ -259,11 +260,23 @@ accuracy(pred_lm_valid,valid_ydf$WS2)
 
 
 ## STOCHASTIC GRADIENT DESCENT ##
-
-
-
-
-
+set.seed(1234)
+sgd_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                         method='gbm',
+                         trControl = trainControl(
+                           method = 'cv',number = 10,
+                           verboseIter = TRUE
+                         ))
+# test on training data
+pred_sgd_train <- predict(sgd_nba,train_norm_xdf)
+accuracy(pred_sgd_train,valid_ydf$WS2)
+#ME     RMSE      MAE  MPE MAPE
+#-0.09899623 4.089584 3.005164 -Inf  Inf
+# test on valid data
+pred_sgd_valid <- predict(sgd_nba,valid_norm_xdf)
+accuracy(pred_sgd_valid,valid_ydf$WS2)
+#ME    RMSE      MAE  MPE MAPE
+#-0.02704274 2.11007 1.586871 -Inf  Inf
 
 
 ## REGRESSION TREE ##
@@ -285,6 +298,11 @@ accuracy(pred_tree_valid,valid_ydf$WS2)
 #ME     RMSE    MAE  MPE MAPE
 #-0.006433537 2.585309 1.9921 -Inf  Inf
 
+## SUPPORT VECTOR MACHINE ##
+# Linear SVM #
+set.seed(1234)
+
+
 
 
 ## RANDOM FOREST ##
@@ -297,6 +315,7 @@ rf_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                   ))
 set.seed(1234)
 rf_nba_2 <- randomForest(WS2~.,cbind(train_ydf,train_norm_xdf),importance=TRUE)
+varImpPlot(rf_nba,type=1)
 varImpPlot(rf_nba_2,type=1)
 # test on training data
 pred_rf_train <- predict(rf_nba,train_norm_xdf)
@@ -341,11 +360,12 @@ accuracy(pred$net.result[,1],valid_ydf$WS2)
 #-0.02311338 2.090387 1.55887 -Inf  Inf
 
 
+### COMPARE MODELS ###
+results <- resamples(list(lm=lm_nba, sgd=sgd_nba))
+summary(results,metric='RMSE')
+bwplot(results)
 
 
 
-
-
-
-## FINAL MODEL ##
+### FINAL 3 MODELS ###
 
