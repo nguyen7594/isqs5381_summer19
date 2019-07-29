@@ -29,7 +29,7 @@ file_path_local = 'C:/Users/nguye/Documents/TTU/5381/nba/'
 #all_star_list_2 = pd.read_csv(file_path_local+file_3)
 #all_star_list_2.info()
 # github load
-file_path_github = 'https://raw.githubusercontent.com/nguyen7594/isqs5381_summer19nn/master/'
+file_path_github = 'https://github.com/nguyen7594/isqs5381_summer19nn/tree/master/csv_original'
 def file_import(file_name,FILE_PATH=file_path_github):
     csv_path = os.path.join(FILE_PATH,file_name)
     return pd.read_csv(csv_path)    
@@ -130,7 +130,7 @@ vabs_selected_output = ['Year','Player_','Tm','Pos','G','MP','Age','PTS','FG','F
                   'TOV','TOV%','PF','WS','all_star']
 season_stat_ = season_stat_[vabs_selected_output]
 #season_stat_.to_csv(os.path.join(file_path_local,r'nba_stat_merged.csv'),index=False)
-season_stat_.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'nba_stat_merged.csv'),index=False)
+season_stat_.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'src',r'nba_stat_merged.csv'),index=False)
 
 
 
