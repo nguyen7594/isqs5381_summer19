@@ -142,9 +142,15 @@ file_merged = 'nba_stat_merged.csv'
 nba_stats = file_import(file_merged)
 #nba_stats.info()
 
+### DATA UNDERSTANDING ###
+nba_8317_all = nba_stats[nba_stats['Year']>1982].copy()
+nba_8317_all.to_csv(os.path.join(file_path_local,r'nba_8317_explore.csv'),index=False)
+
+
+
+
 ### REGRESSION ###
 ## Objective: predict the W/S of the next season
-
 ## Lag WS variable back to previous observation
 # Index for each players
 nba_stats.sort_values(['Player_','Year'],inplace=True)
