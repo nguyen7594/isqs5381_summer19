@@ -19,14 +19,15 @@ library(plyr)
 library(e1071)
 library(kernlab)
 
-set.seed(1234)
 ## Import csv files
 path = '~/TTU/5381/nba/isqs5381_summer19nn/'
-all_set <- read_csv(paste0(path,'nba_8716.csv'))
+all_set <- read_csv(paste0(path,'nba_8317.csv'))
 #head(all_set)
 #str(train_set)
 #dim(all_set)
 # Vabs chosen for x and y
+colSums(is.na(all_set))
+nrow(all_set)
 vab_x <- c("Pos","G","MP","Age","PTS","FG","FG%",
            "2P","2P%","3P","3P%","FT","FT%","AST","AST%",
            "BLK","BLK%","DRB","DRB%","ORB","ORB%","STL","STL%",
@@ -38,25 +39,6 @@ set_y <- all_set[,vab_y]
 
 
 ## Data cleaning
-# Average the total indicators by game 
-#str(train_x)
-#names(train_x)
-ave_col <- c("MP","PTS","FG",
-              "2P","3P","FT","AST",
-              "BLK","DRB","ORB","STL","PF")
-
-for (i in ave_col){
-    set_x[,i] <- set_x[,i]/set_x$G
-  }
- 
-
-# New variables
-# Points Per field goal attempts
-set_x$PTS_AT <- set_x$PTS/(set_x$FG/set_x$`FG%`)  
-set_x <- set_x%>%
-  select(-c(FG,PTS,`FG%`))
-#head(set_x)
-
 #Missing values
 colSums(is.na(set_x))
 # missing values are all in % categories, usually because they did not have any attempt/action 
@@ -195,23 +177,23 @@ vis_train %>%
 ## Dimensional Reduction
 # not suitable for dimensional reduction when there is low correlations
 # between predictor variables
-train_xdf_dm <- train_xdf
-train_xdf_dm$TOV. <- max(train_xdf_dm$TOV.)- train_xdf_dm$TOV. 
-train_xdf_dm$PF <- max(train_xdf_dm$PF)- train_xdf_dm$PF 
-scaled_train_xdf_dm <- scale(train_xdf_dm)
-rownames(scaled_train_xdf_dm) <- str_c(all_set[train_index,]$Player_,all_set[train_index,]$Year,sep="-")
-head(scaled_train_xdf_dm)
+#train_xdf_dm <- train_xdf
+#train_xdf_dm$TOV. <- max(train_xdf_dm$TOV.)- train_xdf_dm$TOV. 
+#train_xdf_dm$PF <- max(train_xdf_dm$PF)- train_xdf_dm$PF 
+#scaled_train_xdf_dm <- scale(train_xdf_dm)
+#rownames(scaled_train_xdf_dm) <- str_c(all_set[train_index,]$Player_,all_set[train_index,]$Year,sep="-")
+#head(scaled_train_xdf_dm)
 # PCA
-x_pca <- princomp(scaled_train_xdf_dm[train_xdf_dm$PTS_AT>1,],cor=T)
-summary(x_pca,loadings=T)
-biplot(x_pca)
+#x_pca <- princomp(scaled_train_xdf_dm[train_xdf_dm$PTS_AT>1,],cor=T)
+#summary(x_pca,loadings=T)
+#biplot(x_pca)
 # K-mean clustering
-fviz_nbclust(scaled_train_xdf_dm, kmeans, method = "wss") +
-  geom_vline(xintercept = 3, linetype = 2,color='red')
-km <- kmeans(scaled_train_xdf_dm, centers = 3, nstart = 30) 
-fviz_cluster(km, data = scaled_train_xdf_dm,
-             ellipse.type = "norm", repel = FALSE, labelsize = 13
-)
+#fviz_nbclust(scaled_train_xdf_dm, kmeans, method = "wss") +
+#  geom_vline(xintercept = 3, linetype = 2,color='red')
+#km <- kmeans(scaled_train_xdf_dm, centers = 3, nstart = 30) 
+#fviz_cluster(km, data = scaled_train_xdf_dm,
+#             ellipse.type = "norm", repel = FALSE, labelsize = 13
+#)
 
 
 
@@ -385,6 +367,7 @@ pred_rf_valid <- predict(rf_nba_2,valid_norm_xdf)
 accuracy(pred_rf_valid,valid_ydf$WS2)
 #ME     RMSE      MAE  MPE MAPE
 #-0.07844664 2.109372 1.593878 -Inf  Inf
+
 
 
 # (7)

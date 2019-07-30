@@ -21,7 +21,7 @@ file_1 = 'Seasons_Stats.csv'
 file_2 = 'NBA_All_Star_Games.csv'
 file_3 = 'NBA_All_Star_Games_addition.csv'
 # local file load
-file_path_local = 'C:/Users/nguye/Documents/TTU/5381/nba/'
+file_path_local = 'C:/Users/nguye/Documents/TTU/5381/nba/isqs5381_summer19nn/src/'
 #season_stat = pd.read_csv(file_path_local+file_1)
 #season_stat.info()
 #all_star_list = pd.read_csv(file_path_local+file_2)
@@ -29,7 +29,7 @@ file_path_local = 'C:/Users/nguye/Documents/TTU/5381/nba/'
 #all_star_list_2 = pd.read_csv(file_path_local+file_3)
 #all_star_list_2.info()
 # github load
-file_path_github = 'https://github.com/nguyen7594/isqs5381_summer19nn/tree/master/csv_original'
+file_path_github = 'https://raw.githubusercontent.com/nguyen7594/isqs5381_summer19nn/master/src/'
 def file_import(file_name,FILE_PATH=file_path_github):
     csv_path = os.path.join(FILE_PATH,file_name)
     return pd.read_csv(csv_path)    
@@ -160,21 +160,19 @@ nba_stats_rm = nba_stats.dropna(subset=['WS2']).copy()
 #nba_stats_rm.info()
 nba_stats_rm.drop(['WS','Player_2','Index_p2','all_star','Index_p'],axis=1,inplace=True)
 
-
 ## Because of limited time for project and many missing values from previous periods
-## We only focus on analyzing the data from 1987-2016: 30 years of basketball
-## Thus, our analysis is derived from data of 1987-2016 or Season '86-'87 - '16-'17
-## OR: use individual stats from '87-'16 to predict WS in '88-'17
-nba_8716 =  nba_stats_rm[nba_stats_rm['Year']>1986].copy()
+## We only focus on analyzing the data from 1983-2016
+## Thus, use individual stats from '83-'16 to predict WS in '84-'17
+nba_8316 =  nba_stats_rm[nba_stats_rm['Year']>1982].copy()
 #nba_stats_rm[nba_stats_rm['Year']>1986].info()
-#nba_8716.info()
-#nba_8716.describe()
-#nba_8716.hist()
+#nba_8316.info()
+#nba_8316.describe()
+#nba_8316.hist()
 # most total indicators e.g. pts, 2p, 3p, ... are right-skewed  
 # thus it is better to average these total indicators by Games played in given season  
 ### EXPORT DATASETS TO DEVELOP MODELS IN R ###
 # All set    
-nba_8716.to_csv(os.path.join(file_path_local,r'isqs5381_summer19nn',r'nba_8716.csv'),index=False)
+nba_8316.to_csv(os.path.join(file_path_local,r'nba_8316.csv'),index=False)
 
 
 ## Split training-test sets as ratio of 80-20, stratied by Year 
