@@ -168,6 +168,7 @@ valid_xdf <- remove_highcor(valid_xdf)
 test_xdf <- remove_highcor(test_xdf)
 
 
+
 ##Visualization
 vis_train <- all_set[train_index,]
 vis_train$pri_pos <- sepPos[train_index,]$set_x.Pos_1 
@@ -348,7 +349,7 @@ poly_svm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
 pred_polyr_svm_valid <- predict(poly_svm_nba,valid_norm_xdf)
 accuracy(pred_polyr_svm_valid,valid_ydf$WS2)
 #ME     RMSE      MAE MPE MAPE
-#Test set 0.3134434 2.173623 1.557764 NaN  Inf
+#0.3134434 2.173623 1.557764 NaN  Inf
 ### Disadvantage: Take a lot time ###
 
 # (6)
@@ -365,8 +366,8 @@ varImpPlot(rf_nba,type=1)
 pred_rf_valid <- predict(rf_nba,valid_norm_xdf)
 accuracy(pred_rf_valid,valid_ydf$WS2)
 #ME     RMSE      MAE  MPE MAPE
-#-0.08025988 2.112688 1.594136 -Inf  Inf
-
+#0.08673411 2.201242 1.626279 -Inf  Inf
+###Disadvantage: take a lot of time 
 
 
 # (7)
@@ -378,17 +379,21 @@ nn_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                   method = 'cv',number = 10,
                   verboseIter = TRUE
                 ))
-
-
-
+pred_nn_valid <- predict(nn_nba,valid_norm_xdf)
+accuracy(pred_nn_valid,valid_ydf$WS2)
+#ME     RMSE      MAE MPE MAPE
+#0.1007654 2.224772 1.645905 NaN  Inf
 
 
 ### COMPARE MODELS ###
-results <- resamples(list(lm=lm_nba, sgd=sgd_nba))
-summary(results,metric='RMSE')
-bwplot(results)
+results <- resamples(list(lm=lm_nba, sgd=sgd_nba,
+                          tree=tree_nba, linear_svm=linear_svm_nba,
+                          non_linear_svm=poly_svm_nba, random_forest=rf_nba,
+                          neural_net=nn_nba))
+summary(results,metric=c('RMSE','MAE'))
+bwplot(results,metrics=c('RMSE','MAE'))
 
 
 
 ### FINAL 3 MODELS ###
-
+SGD, Non-linear svm, Random forst
