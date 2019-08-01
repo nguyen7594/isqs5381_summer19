@@ -145,7 +145,7 @@ nba_stats = file_import(file_merged)
 ### DATA UNDERSTANDING ###
 nba_8317_all = nba_stats[nba_stats['Year']>1982].copy()
 nba_8317_all.to_csv(os.path.join(file_path_local,r'nba_8317_explore.csv'),index=False)
-
+#nba_8317_all.info()
 
 
 

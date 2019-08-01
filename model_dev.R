@@ -22,12 +22,12 @@ library(tibble)
 
 ## Import csv files
 path = '~/TTU/5381/nba/isqs5381_summer19nn/src/'
-all_set <- read_csv(paste0(path,'nba_8316.csv'))
+all_set <- read.csv(paste0(path,'nba_8316.csv'))
 set_explore <- read.csv(paste0(path,'nba_8317_explore.csv'))
-names(set_explore)
+names(all_set)
 ## Overview the dataset ##
 summary(set_explore[,-c(1,2,3,4)])
-
+nrow(all_set)
 ## Histogram of WS ##
 set_explore %>%
   ggplot(aes(WS))+
@@ -87,6 +87,15 @@ set_x <- data.frame(set_x[,-1],sepPos[,c('pos.PG','pos.SG','pos.SF','pos.PF','po
 #names(set_x)
 summary(set_x)
 summary(set_y)
+cor_xy <- cor(set_y,set_x)
+corrplot(cor_xy)
+as.tibble(cor_xy) %>%
+  gather('Features','Correlation') %>%
+  arrange(Correlation)%>%
+  ggplot(aes(reorder(Features,Correlation),Correlation))+
+  geom_bar(stat='identity',aes(fill=Correlation))+
+  coord_flip()+
+  xlab('Features')
 
 
 
@@ -127,7 +136,7 @@ valid_ydf <- set_y[valid_index,]
 test_xdf <- set_x[test_index,] 
 test_ydf <- set_y[test_index,]
 #nrow(test_xdf)
-
+#nrow(test_xdf)+nrow(valid_xdf)+nrow(train_xdf)
 
 
 ## Correlation matrices 
@@ -142,10 +151,10 @@ as.tibble(cor_xy) %>%
   coord_flip()+
   xlab('Features')
 
-## Positions, Age do not seem important -> remove all positions
+## Positions, Age, ORB do not seem important -> remove all positions
 ## PF misleading features -> remove PF
 remove_unneed <- function(df){
-  df[,-which(names(df) %in% c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C','Age','PF'))]
+  df[,-which(names(df) %in% c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C','Age','ORB.'))]
 }
 train_xdf <- remove_unneed(train_xdf)
 valid_xdf <- remove_unneed(valid_xdf)
@@ -166,7 +175,7 @@ remove_highcor <- function(df){
 train_xdf <- remove_highcor(train_xdf)
 valid_xdf <- remove_highcor(valid_xdf)
 test_xdf <- remove_highcor(test_xdf)
-
+names(train_xdf)
 
 
 ##Visualization
@@ -249,7 +258,6 @@ norm_values <- preProcess(train_xdf,method=c('range'))
 train_norm_xdf <- predict(norm_values,train_xdf)
 valid_norm_xdf <- predict(norm_values,valid_xdf)
 test_norm_xdf <- predict(norm_values,test_xdf)
-
 ## WS2 ##
 summary(train_ydf$WS2)
 #Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
@@ -283,10 +291,9 @@ lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
 summary(lm_nba)
 # test on valid data
 pred_lm_valid <- predict(lm_nba,valid_norm_xdf)
-accuracy(pred_lm_valid,valid_ydf$WS2)
+lm_valid <- accuracy(pred_lm_valid,valid_ydf$WS2)
 #ME     RMSE      MAE MPE MAPE
-#0.08963627 2.234972 1.674389 NaN  Inf
-
+#0.09574533 2.225369 1.666268 NaN  Inf
 
 # (2)
 ## STOCHASTIC GRADIENT DESCENT ##
@@ -299,9 +306,9 @@ sgd_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                          ))
 # test on valid data
 pred_sgd_valid <- predict(sgd_nba,valid_norm_xdf)
-accuracy(pred_sgd_valid,valid_ydf$WS2)
+sgd_valid <- accuracy(pred_sgd_valid,valid_ydf$WS2)
 #ME     RMSE      MAE MPE MAPE
-#0.1209268 2.182155 1.609092 NaN  Inf
+#0.1221966 2.193442 1.615673 NaN  Inf
 
 # (3)
 ## REGRESSION TREE ##
@@ -314,10 +321,9 @@ tree_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                 ))
 # test on valid data
 pred_tree_valid <- predict(tree_nba,valid_norm_xdf)
-accuracy(pred_tree_valid,valid_ydf$WS2)
+rt_valid <- accuracy(pred_tree_valid,valid_ydf$WS2)
 #ME     RMSE      MAE  MPE MAPE
 #0.1091912 2.559957 1.882805 -Inf  Inf
-
 
 # (4)
 ## SUPPORT VECTOR MACHINE ##
@@ -331,9 +337,9 @@ linear_svm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                         ))
 # test on valid data
 pred_linear_svm_valid <- predict(linear_svm_nba,valid_norm_xdf)
-accuracy(pred_linear_svm_valid,valid_ydf$WS2)
+lin_svm_valid <- accuracy(pred_linear_svm_valid,valid_ydf$WS2)
 #ME     RMSE      MAE MPE MAPE
-#0.3513625 2.261586 1.638948 NaN  Inf
+#0.3544472 2.253952 1.631224 NaN  Inf
 
 # (5)
 ## SUPPORT VECTOR MACHINE ##
@@ -347,9 +353,9 @@ poly_svm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                         ))
 # test on valid data
 pred_polyr_svm_valid <- predict(poly_svm_nba,valid_norm_xdf)
-accuracy(pred_polyr_svm_valid,valid_ydf$WS2)
+poly_svm_valid <- accuracy(pred_polyr_svm_valid,valid_ydf$WS2)
 #ME     RMSE      MAE MPE MAPE
-#0.3134434 2.173623 1.557764 NaN  Inf
+#0.3278083 2.202694 1.569462 NaN  Inf
 ### Disadvantage: Take a lot time ###
 
 # (6)
@@ -361,14 +367,15 @@ rf_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                     method = 'cv',number = 10,
                     verboseIter = TRUE
                   ))
-varImpPlot(rf_nba,type=1)
+plot(varImp(rf_nba,type=1))
 # test on valid data
 pred_rf_valid <- predict(rf_nba,valid_norm_xdf)
-accuracy(pred_rf_valid,valid_ydf$WS2)
+rf_valid <- accuracy(pred_rf_valid,valid_ydf$WS2)
 #ME     RMSE      MAE  MPE MAPE
-#0.08673411 2.201242 1.626279 -Inf  Inf
+#0.08127073 2.200269 1.628208 -Inf  Inf
 ###Disadvantage: take a lot of time 
-
+summary(rf_nba)
+plot(rf_nba)
 
 # (7)
 ## NEURAL NET ##
@@ -380,20 +387,62 @@ nn_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                   verboseIter = TRUE
                 ))
 pred_nn_valid <- predict(nn_nba,valid_norm_xdf)
-accuracy(pred_nn_valid,valid_ydf$WS2)
+nn_valid <- accuracy(pred_nn_valid,valid_ydf$WS2)
 #ME     RMSE      MAE MPE MAPE
-#0.1007654 2.224772 1.645905 NaN  Inf
+#0.1041892 2.225789 1.644531 NaN  Inf
+
 
 
 ### COMPARE MODELS ###
+# Training data
 results <- resamples(list(lm=lm_nba, sgd=sgd_nba,
                           tree=tree_nba, linear_svm=linear_svm_nba,
                           non_linear_svm=poly_svm_nba, random_forest=rf_nba,
                           neural_net=nn_nba))
 summary(results,metric=c('RMSE','MAE'))
-bwplot(results,metrics=c('RMSE','MAE'))
+bwplot(results,metric=c('RMSE','MAE'))
+# Valid data
+metrics_valid <- tribble(~Model,~MAE,~RMSE,
+                'lm',as.data.frame(lm_valid)$MAE,as.data.frame(lm_valid)$RMSE,
+                'sgd',as.data.frame(sgd_valid)$MAE,as.data.frame(sgd_valid)$RMSE,
+                'rt',as.data.frame(rt_valid)$MAE,as.data.frame(rt_valid)$RMSE,
+                'lin_svm',as.data.frame(lin_svm_valid)$MAE,as.data.frame(lin_svm_valid)$RMSE,
+                'poly_svm',as.data.frame(poly_svm_valid)$MAE,as.data.frame(poly_svm_valid)$RMSE,
+                'rf',as.data.frame(rf_valid)$MAE,as.data.frame(rf_valid)$RMSE,
+                'nn',as.data.frame(nn_valid)$MAE,as.data.frame(nn_valid)$RMSE)
+metrics_valid %>%
+  gather('Metrics','Value',-Model)%>%
+  ggplot(aes(x=Model))+
+  geom_point(aes(y=Value,col=Metrics),size=3)
 
 
 
 ### FINAL 3 MODELS ###
-SGD, Non-linear svm, Random forst
+# 3 models are selected: SGD, Non-linear SVM, Random forest
+plot(sgd_nba)
+summary(sgd_nba)
+plot(poly_svm_nba)
+summary(poly_svm_nba)
+plot(rf_nba)
+summary(rf_nba)
+# Tuning 3 Models using all-training and valid datasets 
+# SGD
+control <- trainControl(method = 'cv',number = 10,verboseIter = TRUE)
+set.seed(1234)
+sgd_nba_tuning <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                 method='gbm',
+                 trControl = control, tuneLength=5)
+plot(sgd_nba_tuning)
+summary(sgd_nba_tuning)
+pred_sgd_valid_tuning <- predict(sgd_nba_tuning,valid_norm_xdf)
+accuracy(pred_sgd_valid_tuning,valid_ydf$WS2)
+#ME     RMSE      MAE MPE MAPE
+#0.129122 2.185305 1.606307 NaN  Inf
+
+# Poly SVM
+set.seed(1234)
+poly_svm_nba_tuning <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+                        method='svmPoly',
+                        trControl = control, tuneLength=5)
+
+#
