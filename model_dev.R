@@ -418,7 +418,7 @@ metrics_valid %>%
 
 
 ### FINAL 3 MODELS ###
-# 3 models are selected: SGD, Non-linear SVM, Random forest
+# 3 models are selected: SGD, Poly (Non-linear) SVM, Random forest
 plot(sgd_nba)
 summary(sgd_nba)
 plot(poly_svm_nba)
@@ -426,23 +426,20 @@ summary(poly_svm_nba)
 plot(rf_nba)
 summary(rf_nba)
 # Tuning 3 Models using all-training and valid datasets 
+training_ydf <- rbind(train_ydf,valid_ydf)
+training_xdf <- rbind(train_xdf,valid_xdf)
+training_norm_xdf <- predict(norm_values,training_xdf)
 # SGD
 control <- trainControl(method = 'cv',number = 10,verboseIter = TRUE)
 set.seed(1234)
-sgd_nba_tuning <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+sgd_nba_tuning <- train(WS2 ~ .,cbind(training_ydf,training_norm_xdf),
                  method='gbm',
-                 trControl = control, tuneLength=5)
+                 trControl = control, tuneLength=15)
 plot(sgd_nba_tuning)
 summary(sgd_nba_tuning)
-pred_sgd_valid_tuning <- predict(sgd_nba_tuning,valid_norm_xdf)
-accuracy(pred_sgd_valid_tuning,valid_ydf$WS2)
-#ME     RMSE      MAE MPE MAPE
-#0.129122 2.185305 1.606307 NaN  Inf
-
 # Poly SVM
 set.seed(1234)
-poly_svm_nba_tuning <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
+poly_svm_nba_tuning <- train(WS2 ~ .,cbind(training_ydf,training_norm_xdf),
                         method='svmPoly',
-                        trControl = control, tuneLength=5)
-
-#
+                        trControl = control, tuneLength=15)
+# Random Forest
