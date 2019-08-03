@@ -21,7 +21,6 @@ library(kernlab)
 library(tibble)
 
 
-
 ## Import csv files
 path = '~/TTU/5381/nba/isqs5381_summer19nn/src/'
 # WS lagged created
@@ -304,7 +303,7 @@ lm_valid
 
 
 # (2)
-## STOCHASTIC GRADIENT DESCENT ##
+## GRADIENT BOOSTING MACHINE ##
 set.seed(1234)
 sgd_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                          method='gbm',
@@ -318,6 +317,9 @@ sgd_valid <- accuracy(pred_sgd_valid,valid_ydf$WS2)
 sgd_valid
 #ME     RMSE      MAE MPE MAPE
 #0.1221966 2.193442 1.615673 NaN  Inf
+resid_sgd_valid <- valid_ydf$WS2 - pred_sgd_valid
+hist(resid_sgd_valid)
+plot(sgd_nba)
 
 
 # (3)
@@ -372,7 +374,8 @@ poly_svm_valid
 #ME     RMSE      MAE MPE MAPE
 #0.3278083 2.202694 1.569462 NaN  Inf
 ### Disadvantage: Take a lot time ###
-
+resid_polyr_svm_valid <- valid_ydf$WS2 - pred_polyr_svm_valid
+hist(resid_polyr_svm_valid)
 
 # (6)
 ## RANDOM FOREST ##
@@ -393,6 +396,8 @@ rf_valid
 ###Disadvantage: take a lot of time 
 summary(rf_nba)
 plot(rf_nba)
+resid_rf_valid <- valid_ydf$WS2 - pred_rf_valid
+hist(resid_rf_valid)
 
 
 # (7)
@@ -414,7 +419,7 @@ nn_valid
 
 ### COMPARE MODELS ###
 # Training data
-results <- resamples(list(linear_model=lm_nba, stochastic_gd=sgd_nba,
+results <- resamples(list(linear_model=lm_nba, gradient_boosting=sgd_nba,
                           reg_tree=tree_nba, linear_svm=linear_svm_nba,
                           poly_svm=poly_svm_nba, random_forest=rf_nba,
                           neural_net=nn_nba))
@@ -423,7 +428,7 @@ bwplot(results,metric=c('RMSE','MAE'))
 # Valid data
 metrics_valid <- tribble(~Model,~MAE,~RMSE,
                 'linear_model',as.data.frame(lm_valid)$MAE,as.data.frame(lm_valid)$RMSE,
-                'stochastic_gd',as.data.frame(sgd_valid)$MAE,as.data.frame(sgd_valid)$RMSE,
+                'gradient_boosting',as.data.frame(sgd_valid)$MAE,as.data.frame(sgd_valid)$RMSE,
                 'reg_tree',as.data.frame(rt_valid)$MAE,as.data.frame(rt_valid)$RMSE,
                 'linear_svm',as.data.frame(lin_svm_valid)$MAE,as.data.frame(lin_svm_valid)$RMSE,
                 'poly_svm',as.data.frame(poly_svm_valid)$MAE,as.data.frame(poly_svm_valid)$RMSE,
@@ -433,40 +438,110 @@ metrics_valid %>%
   gather('Metrics','Value',-Model)%>%
   ggplot(aes(x=Model))+
   geom_point(aes(y=Value,col=Metrics),size=3)+
-  theme(axis.text.x = element_text())
-
+  theme(axis.text.x = element_text(angle=30))
 as.data.frame(metrics_valid)
 
 
-### FINAL 3 MODELS ###
-# 3 models are selected: SGD, Poly (Non-linear) SVM, Random forest
-plot(sgd_nba)
-summary(sgd_nba)
-sgd_nba
-plot(poly_svm_nba)
-summary(poly_svm_nba)
-poly_svm_nba
-plot(rf_nba)
-summary(rf_nba)
-rf_nba
 
-# Tuning 3 Models using all-training and valid datasets 
+## MODEL TUNING ##
+# Using train() (however, Shrinkage and n.minobsinnode was held constant at 0.1 and 10)
 training_ydf <- rbind(train_ydf,valid_ydf)
-training_xdf <- rbind(train_xdf,valid_xdf)
-training_norm_xdf <- predict(norm_values,training_xdf)
+training_norm_xdf <- rbind(train_norm_xdf,valid_norm_xdf)
 
-# SGD
-control <- trainControl(method = 'cv',number = 10,verboseIter = TRUE)
+set.seed(1234)  
+sgd_tuning <- train(WS2 ~ .,cbind(training_ydf,training_norm_xdf),
+                    method='gbm',tuneLength=20,
+                    trControl = trainControl(
+                      method = 'cv',number = 5,
+                      verboseIter = TRUE
+                    ))
+sgd_tuning
+plot(sgd_tuning)
+summary(sgd_tuning)
+
+
+# using gbm()
+hyper_grid <- expand.grid(
+  shrinkage = c(.01, .1, .3),
+  interaction.depth = c(1,2,3,4,5),
+  n.minobsinnode = c(5, 10, 15),
+  bag.fraction = c(.65, .8, 1), 
+  optimal_trees = 0,               # a place to dump results
+  min_RMSE = 0                     # a place to dump results
+)
+nrow(hyper_grid)
+
+for(i in 1:nrow(hyper_grid)) {
+    # reproducibility
+  set.seed(1234)
+    # train model
+  gbm.tune <- gbm(
+    formula = WS2 ~ .,
+    distribution = "gaussian",
+    data = cbind(training_ydf,training_norm_xdf),
+    n.trees = 1000,
+    interaction.depth = hyper_grid$interaction.depth[i],
+    shrinkage = hyper_grid$shrinkage[i],
+    n.minobsinnode = hyper_grid$n.minobsinnode[i],
+    bag.fraction = hyper_grid$bag.fraction[i],
+    cv.folds = 5,
+    n.cores = NULL, # will use all cores by default
+    verbose = FALSE
+  )
+  
+  # add min training error and trees to grid
+  hyper_grid$optimal_trees[i] <- which.min(gbm.tune$cv.error)
+  hyper_grid$min_RMSE[i] <- sqrt(gbm.tune$cv.error[hyper_grid$optimal_trees[i]])
+}
+
+hyper_grid %>%
+  arrange(min_RMSE)%>%
+  top_n(-10,wt=min_RMSE)
+
+## Train final model
+# for reproducibility
 set.seed(1234)
-sgd_nba_tuning <- train(WS2 ~ .,cbind(training_ydf,training_norm_xdf),
-                 method='gbm',
-                 trControl = control, tuneLength=5)
-plot(sgd_nba_tuning)
-summary(sgd_nba_tuning)
-sgd_nba_tuning
-# Poly SVM
-set.seed(1234)
-poly_svm_nba_tuning <- train(WS2 ~ .,cbind(training_ydf,training_norm_xdf),
-                        method='svmPoly',
-                        trControl = control, tuneLength=5)
-# Random Forest
+
+# train GBM model
+
+nba.fit.final <- gbm(
+  formula = WS2 ~ .,
+  distribution = "gaussian",
+  data = cbind(training_ydf,training_norm_xdf),
+  n.trees = 358,
+  interaction.depth = 3,
+  shrinkage = 0.1,
+  n.minobsinnode = 15,
+  bag.fraction = .80, 
+  train.fraction = 1,
+  n.cores = NULL, # will use all cores by default
+  verbose = FALSE
+)
+
+
+# save model to disk
+saveRDS(nba.fit.final,"~/TTU/5381/nba/isqs5381_summer19nn/nba.fit.finalModel.rds")
+#read mode: readRDS("~/TTU/5381/nba/isqs5381_summer19nn/nba.fit.finalModel.rds")
+
+
+## Feature importance
+par(mar = c(5, 5, 1, 1))
+summary(
+  nba.fit.final, 
+  cBars = 10,
+  method = relative.influence, # also can use permutation.test.gbm
+  las = 1
+)
+
+## Explaination for why 3P is not relatively important in model
+# 2P v. 3P
+nba_since_2013 <- set_explore[set_explore$Year>2012,]
+sum(nba_since_2013$`2P`)/sum(nba_since_2013$`3P`)
+
+
+
+#### EVALUATION ####
+# evaluate final model on Test data
+pred_test <- predict(nba.fit.final, n.trees = nba.fit.final$n.trees,test_norm_xdf)
+pred_metrics_test <- accuracy(pred_test,test_ydf$WS2)
+pred_metrics_test
