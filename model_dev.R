@@ -20,14 +20,17 @@ library(e1071)
 library(kernlab)
 library(tibble)
 
+
+
 ## Import csv files
 path = '~/TTU/5381/nba/isqs5381_summer19nn/src/'
-all_set <- read.csv(paste0(path,'nba_8316.csv'))
-set_explore <- read.csv(paste0(path,'nba_8317_explore.csv'))
-names(all_set)
+# WS lagged created
+all_set <- read_csv(paste0(path,'nba_8316.csv'))
+# NO WS lagged
+set_explore <- read_csv(paste0(path,'nba_8317_explore.csv'))
 ## Overview the dataset ##
 summary(set_explore[,-c(1,2,3,4)])
-nrow(all_set)
+#nrow(all_set)
 ## Histogram of WS ##
 set_explore %>%
   ggplot(aes(WS))+
@@ -47,9 +50,10 @@ sum(set_explore['all_star']==0)/nrow(set_explore)
 #head(all_set)
 #str(train_set)
 #dim(all_set)
+#names(all_set)
+
 # Vabs chosen for x and y
-colSums(is.na(all_set))
-nrow(all_set)
+#colSums(is.na(all_set))
 vab_x <- c("Pos","G","MP","Age","PTS","FG","FG%",
            "2P","2P%","3P","3P%","FT","FT%","AST","AST%",
            "BLK","BLK%","DRB","DRB%","ORB","ORB%","STL","STL%",
@@ -58,7 +62,6 @@ vab_y <- "WS2"
 ## split predictor and response variables
 set_x <- all_set[,vab_x] 
 set_y <- all_set[,vab_y]
-
 
 ## Data cleaning
 #Missing values
@@ -85,8 +88,10 @@ sepPos[(sepPos$set_x.Pos_1=='C')|(sepPos$set_x.Pos_2=='C'),'pos.C']<-1
 #head(sepPos)
 set_x <- data.frame(set_x[,-1],sepPos[,c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C')])
 #names(set_x)
-summary(set_x)
-summary(set_y)
+#summary(set_x)
+#summary(set_y)
+
+#Correlation between WS and predictor variables 
 cor_xy <- cor(set_y,set_x)
 corrplot(cor_xy)
 as.tibble(cor_xy) %>%
@@ -135,8 +140,9 @@ valid_ydf <- set_y[valid_index,]
 # test df
 test_xdf <- set_x[test_index,] 
 test_ydf <- set_y[test_index,]
-#nrow(test_xdf)
+#nrow(set_x)
 #nrow(test_xdf)+nrow(valid_xdf)+nrow(train_xdf)
+
 
 
 ## Correlation matrices 
@@ -288,12 +294,14 @@ lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
    #               method = 'repeatedcv',number = 10,
     #              verboseIter = TRUE, repeats=5
      #           ))
-summary(lm_nba)
+#summary(lm_nba)
 # test on valid data
 pred_lm_valid <- predict(lm_nba,valid_norm_xdf)
 lm_valid <- accuracy(pred_lm_valid,valid_ydf$WS2)
+lm_valid
 #ME     RMSE      MAE MPE MAPE
 #0.09574533 2.225369 1.666268 NaN  Inf
+
 
 # (2)
 ## STOCHASTIC GRADIENT DESCENT ##
@@ -307,8 +315,10 @@ sgd_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
 # test on valid data
 pred_sgd_valid <- predict(sgd_nba,valid_norm_xdf)
 sgd_valid <- accuracy(pred_sgd_valid,valid_ydf$WS2)
+sgd_valid
 #ME     RMSE      MAE MPE MAPE
 #0.1221966 2.193442 1.615673 NaN  Inf
+
 
 # (3)
 ## REGRESSION TREE ##
@@ -322,8 +332,10 @@ tree_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
 # test on valid data
 pred_tree_valid <- predict(tree_nba,valid_norm_xdf)
 rt_valid <- accuracy(pred_tree_valid,valid_ydf$WS2)
+rt_valid
 #ME     RMSE      MAE  MPE MAPE
 #0.1091912 2.559957 1.882805 -Inf  Inf
+
 
 # (4)
 ## SUPPORT VECTOR MACHINE ##
@@ -338,8 +350,10 @@ linear_svm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
 # test on valid data
 pred_linear_svm_valid <- predict(linear_svm_nba,valid_norm_xdf)
 lin_svm_valid <- accuracy(pred_linear_svm_valid,valid_ydf$WS2)
+lin_svm_valid
 #ME     RMSE      MAE MPE MAPE
 #0.3544472 2.253952 1.631224 NaN  Inf
+
 
 # (5)
 ## SUPPORT VECTOR MACHINE ##
@@ -354,9 +368,11 @@ poly_svm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
 # test on valid data
 pred_polyr_svm_valid <- predict(poly_svm_nba,valid_norm_xdf)
 poly_svm_valid <- accuracy(pred_polyr_svm_valid,valid_ydf$WS2)
+poly_svm_valid
 #ME     RMSE      MAE MPE MAPE
 #0.3278083 2.202694 1.569462 NaN  Inf
 ### Disadvantage: Take a lot time ###
+
 
 # (6)
 ## RANDOM FOREST ##
@@ -371,11 +387,13 @@ plot(varImp(rf_nba,type=1))
 # test on valid data
 pred_rf_valid <- predict(rf_nba,valid_norm_xdf)
 rf_valid <- accuracy(pred_rf_valid,valid_ydf$WS2)
+rf_valid
 #ME     RMSE      MAE  MPE MAPE
 #0.08127073 2.200269 1.628208 -Inf  Inf
 ###Disadvantage: take a lot of time 
 summary(rf_nba)
 plot(rf_nba)
+
 
 # (7)
 ## NEURAL NET ##
@@ -388,6 +406,7 @@ nn_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                 ))
 pred_nn_valid <- predict(nn_nba,valid_norm_xdf)
 nn_valid <- accuracy(pred_nn_valid,valid_ydf$WS2)
+nn_valid
 #ME     RMSE      MAE MPE MAPE
 #0.1041892 2.225789 1.644531 NaN  Inf
 
@@ -395,51 +414,59 @@ nn_valid <- accuracy(pred_nn_valid,valid_ydf$WS2)
 
 ### COMPARE MODELS ###
 # Training data
-results <- resamples(list(lm=lm_nba, sgd=sgd_nba,
-                          tree=tree_nba, linear_svm=linear_svm_nba,
-                          non_linear_svm=poly_svm_nba, random_forest=rf_nba,
+results <- resamples(list(linear_model=lm_nba, stochastic_gd=sgd_nba,
+                          reg_tree=tree_nba, linear_svm=linear_svm_nba,
+                          poly_svm=poly_svm_nba, random_forest=rf_nba,
                           neural_net=nn_nba))
 summary(results,metric=c('RMSE','MAE'))
 bwplot(results,metric=c('RMSE','MAE'))
 # Valid data
 metrics_valid <- tribble(~Model,~MAE,~RMSE,
-                'lm',as.data.frame(lm_valid)$MAE,as.data.frame(lm_valid)$RMSE,
-                'sgd',as.data.frame(sgd_valid)$MAE,as.data.frame(sgd_valid)$RMSE,
-                'rt',as.data.frame(rt_valid)$MAE,as.data.frame(rt_valid)$RMSE,
-                'lin_svm',as.data.frame(lin_svm_valid)$MAE,as.data.frame(lin_svm_valid)$RMSE,
+                'linear_model',as.data.frame(lm_valid)$MAE,as.data.frame(lm_valid)$RMSE,
+                'stochastic_gd',as.data.frame(sgd_valid)$MAE,as.data.frame(sgd_valid)$RMSE,
+                'reg_tree',as.data.frame(rt_valid)$MAE,as.data.frame(rt_valid)$RMSE,
+                'linear_svm',as.data.frame(lin_svm_valid)$MAE,as.data.frame(lin_svm_valid)$RMSE,
                 'poly_svm',as.data.frame(poly_svm_valid)$MAE,as.data.frame(poly_svm_valid)$RMSE,
-                'rf',as.data.frame(rf_valid)$MAE,as.data.frame(rf_valid)$RMSE,
-                'nn',as.data.frame(nn_valid)$MAE,as.data.frame(nn_valid)$RMSE)
+                'random_forest',as.data.frame(rf_valid)$MAE,as.data.frame(rf_valid)$RMSE,
+                'neural_net',as.data.frame(nn_valid)$MAE,as.data.frame(nn_valid)$RMSE)
 metrics_valid %>%
   gather('Metrics','Value',-Model)%>%
   ggplot(aes(x=Model))+
-  geom_point(aes(y=Value,col=Metrics),size=3)
+  geom_point(aes(y=Value,col=Metrics),size=3)+
+  theme(axis.text.x = element_text())
 
+as.data.frame(metrics_valid)
 
 
 ### FINAL 3 MODELS ###
 # 3 models are selected: SGD, Poly (Non-linear) SVM, Random forest
 plot(sgd_nba)
 summary(sgd_nba)
+sgd_nba
 plot(poly_svm_nba)
 summary(poly_svm_nba)
+poly_svm_nba
 plot(rf_nba)
 summary(rf_nba)
+rf_nba
+
 # Tuning 3 Models using all-training and valid datasets 
 training_ydf <- rbind(train_ydf,valid_ydf)
 training_xdf <- rbind(train_xdf,valid_xdf)
 training_norm_xdf <- predict(norm_values,training_xdf)
+
 # SGD
 control <- trainControl(method = 'cv',number = 10,verboseIter = TRUE)
 set.seed(1234)
 sgd_nba_tuning <- train(WS2 ~ .,cbind(training_ydf,training_norm_xdf),
                  method='gbm',
-                 trControl = control, tuneLength=15)
+                 trControl = control, tuneLength=5)
 plot(sgd_nba_tuning)
 summary(sgd_nba_tuning)
+sgd_nba_tuning
 # Poly SVM
 set.seed(1234)
 poly_svm_nba_tuning <- train(WS2 ~ .,cbind(training_ydf,training_norm_xdf),
                         method='svmPoly',
-                        trControl = control, tuneLength=15)
+                        trControl = control, tuneLength=5)
 # Random Forest
