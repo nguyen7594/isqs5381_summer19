@@ -141,7 +141,8 @@ test_xdf <- set_x[test_index,]
 test_ydf <- set_y[test_index,]
 #nrow(set_x)
 #nrow(test_xdf)+nrow(valid_xdf)+nrow(train_xdf)
-
+hist(test_ydf$WS2)
+sd(test_ydf$WS2)
 
 
 ## Correlation matrices 
@@ -209,27 +210,36 @@ vis_train %>%
 # PTS/AT v. WS2 by positions
 #2P
 vis_train %>%
-  filter(PTS>15,MP>15)%>%
+  filter(PTS>160,MP>160)%>%
   ggplot(aes(PTS,WS2))+
   geom_jitter(aes(size=`2P%`),alpha=0.4)+
-  facet_wrap(~pri_pos)
+  facet_wrap(~pri_pos)+
+  ylab('WS')
+
 #3P
 vis_train %>%
-  filter(PTS>15,MP>15)%>%
-  ggplot(aes(PTS_AT,WS2))+
-  geom_jitter(aes(size=`3P`),alpha=0.4)+
-  facet_wrap(~pri_pos)
+  filter(PTS>160,MP>160)%>%
+  ggplot(aes(PTS,WS2))+
+  geom_jitter(aes(size=`3P%`),alpha=0.4)+
+  facet_wrap(~pri_pos)+
+  ylab('WS')
+
 # 3P%  by positions
 vis_train %>%
-  filter(PTS>10,MP>15)%>%
+  filter(PTS>160,MP>160)%>%
   ggplot(aes(pri_pos,`3P%`))+
-  geom_boxplot()
-# AST v. PTS 
+  geom_boxplot()+
+  xlab('Positions')
+
+
+# DRB v. 2P 
 vis_train %>%
-  filter(MP>15)%>%
-  ggplot(aes(AST,PTS))+
-  geom_jitter(aes(size=WS2),alpha=0.2)+
-  facet_wrap(~pri_pos)
+  filter(MP>160,WS2>3,PTS>800)%>%
+  ggplot(aes(pri_pos,DRB+ORB))+
+  geom_boxplot()+
+  xlab('Position')+
+  ylab('Rebounds')
+
 
 
 ## Dimensional Reduction
@@ -518,6 +528,9 @@ nba.fit.final <- gbm(
   verbose = FALSE
 )
 
+pred_training <- predict(nba.fit.final,n.trees = nba.fit.final$n.trees,training_norm_xdf)
+pred_training_metrics <- accuracy(pred_training,training_ydf$WS2)
+pred_training_metrics
 
 # save model to disk
 saveRDS(nba.fit.final,"~/TTU/5381/nba/isqs5381_summer19nn/nba.fit.finalModel.rds")
