@@ -536,7 +536,6 @@ pred_training_metrics
 saveRDS(nba.fit.final,"~/TTU/5381/nba/isqs5381_summer19nn/nba.fit.finalModel.rds")
 #read mode: readRDS("~/TTU/5381/nba/isqs5381_summer19nn/nba.fit.finalModel.rds")
 
-
 ## Feature importance
 par(mar = c(5, 5, 1, 1))
 summary(
