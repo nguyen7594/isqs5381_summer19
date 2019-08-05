@@ -45,6 +45,11 @@ sum(set_explore['all_star']==1)/nrow(set_explore)
 sum(set_explore['all_star']==0)
 sum(set_explore['all_star']==0)/nrow(set_explore)
 
+## Correlation 
+set_explore[is.na(set_explore)] = 0
+cor_all <- cor(set_explore[,-c(1,2,3,4)],use = "everything")
+corrplot(cor_all)
+
 
 #head(all_set)
 #str(train_set)
@@ -86,10 +91,15 @@ sepPos[(sepPos$set_x.Pos_1=='PF')|(sepPos$set_x.Pos_2=='PF'),'pos.PF']<-1
 sepPos[(sepPos$set_x.Pos_1=='C')|(sepPos$set_x.Pos_2=='C'),'pos.C']<-1
 #head(sepPos)
 set_x <- data.frame(set_x[,-1],sepPos[,c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C')])
+set_x <- as.tibble(set_x)
+names(set_x) <- c("G","MP","Age","PTS","FG","FG%",
+                  "2P","2P%","3P","3P%","FT","FT%","AST","AST%",
+                  "BLK","BLK%","DRB","DRB%","ORB","ORB%","STL","STL%",
+                  "TOV%","PF") 
 #names(set_x)
 #summary(set_x)
 #summary(set_y)
-
+head(set_x)
 #Correlation between WS and predictor variables 
 cor_xy <- cor(set_y,set_x)
 corrplot(cor_xy)
