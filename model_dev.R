@@ -13,7 +13,6 @@ library(forecast)
 library(rpart)
 library(randomForest)
 library(neuralnet)
-# Stochastic Gradient Boosting
 library(gbm)
 library(plyr)
 library(e1071)
@@ -21,15 +20,17 @@ library(kernlab)
 library(tibble)
 
 
-## Import csv files
+## Import csv files ##
 path = '~/TTU/5381/nba/isqs5381_summer19nn/src/'
 # WS lagged created
 all_set <- read_csv(paste0(path,'nba_8316.csv'))
 # NO WS lagged
 set_explore <- read_csv(paste0(path,'nba_8317_explore.csv'))
-## Overview the dataset ##
+
+#### Overview the dataset ####
 summary(set_explore[,-c(1,2,3,4)])
 #nrow(all_set)
+
 ## Histogram of WS ##
 set_explore %>%
   ggplot(aes(WS))+
@@ -40,24 +41,16 @@ sd(set_explore$WS) ~~~ 3.092
 set_explore %>%
   ggplot(aes(all_star))+
   geom_histogram()
-sum(set_explore['all_star']==1)
 sum(set_explore['all_star']==1)/nrow(set_explore)
-sum(set_explore['all_star']==0)
 sum(set_explore['all_star']==0)/nrow(set_explore)
 
-## Correlation 
+## Correlation ##
 set_explore[is.na(set_explore)] = 0
 cor_all <- cor(set_explore[,-c(1,2,3,4)],use = "everything")
 corrplot(cor_all)
 
 
-#head(all_set)
-#str(train_set)
-#dim(all_set)
-#names(all_set)
-
-# Vabs chosen for x and y
-#colSums(is.na(all_set))
+## Vabs chosen for x and y ##
 vab_x <- c("Pos","G","MP","Age","PTS","FG","FG%",
            "2P","2P%","3P","3P%","FT","FT%","AST","AST%",
            "BLK","BLK%","DRB","DRB%","ORB","ORB%","STL","STL%",
@@ -67,14 +60,16 @@ vab_y <- "WS2"
 set_x <- all_set[,vab_x] 
 set_y <- all_set[,vab_y]
 
-## Data cleaning
-#Missing values
+
+
+#### Data cleaning ####
+## Missing values ##
 colSums(is.na(set_x))
 # missing values are all in % categories, usually because they did not have any attempt/action 
 # for that category. Thus, for these case, we assume no attempt/action is the same as o% success 
 set_x[is.na(set_x)] <- 0
 
-# Position 
+## Position ##
 #unique(set_x$Pos)
 pos_sep <- data.frame(all_set$Player_,set_x$Pos)
 #head(pos_sep)
@@ -89,33 +84,15 @@ sepPos[(sepPos$set_x.Pos_1=='SG')|(sepPos$set_x.Pos_2=='SG'),'pos.SG']<-1
 sepPos[(sepPos$set_x.Pos_1=='SF')|(sepPos$set_x.Pos_2=='SF'),'pos.SF']<-1
 sepPos[(sepPos$set_x.Pos_1=='PF')|(sepPos$set_x.Pos_2=='PF'),'pos.PF']<-1
 sepPos[(sepPos$set_x.Pos_1=='C')|(sepPos$set_x.Pos_2=='C'),'pos.C']<-1
-#head(sepPos)
 set_x <- data.frame(set_x[,-1],sepPos[,c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C')])
 set_x <- as.tibble(set_x)
 names(set_x) <- c("G","MP","Age","PTS","FG","FG%",
                   "2P","2P%","3P","3P%","FT","FT%","AST","AST%",
                   "BLK","BLK%","DRB","DRB%","ORB","ORB%","STL","STL%",
-                  "TOV%","PF") 
-#names(set_x)
-#summary(set_x)
-#summary(set_y)
-head(set_x)
-#Correlation between WS and predictor variables 
-cor_xy <- cor(set_y,set_x)
-corrplot(cor_xy)
-as.tibble(cor_xy) %>%
-  gather('Features','Correlation') %>%
-  arrange(Correlation)%>%
-  ggplot(aes(reorder(Features,Correlation),Correlation))+
-  geom_bar(stat='identity',aes(fill=Correlation))+
-  coord_flip()+
-  xlab('Features')
+                  "TOV%","PF",'pos.PG','pos.SG','pos.SF','pos.PF','pos.C') 
 
 
-
-
-
-### Split the training-valid-set
+#### Split the training-valid-set ####
 set.seed(1234)
 df <- data.frame(all_set$Year,1:nrow(set_x))
 df_index <-sample(1:nrow(set_x))
@@ -137,7 +114,7 @@ train_index <- trainvalid_index[train_,]$index
 valid_index <- trainvalid_index[-train_,]$index
 #head(valid_index)
 
-## Split the data 
+## Split the data ## 
 # train df
 train_xdf <- set_x[train_index,] 
 train_ydf <- set_y[train_index,]
@@ -155,53 +132,13 @@ hist(test_ydf$WS2)
 sd(test_ydf$WS2)
 
 
-## Correlation matrices 
-#cor bw WS and predictor variables
-cor_xy <- cor(train_ydf,train_xdf)
-corrplot(cor_xy)
-as.tibble(cor_xy) %>%
-  gather('Features','Correlation') %>%
-  arrange(Correlation)%>%
-  ggplot(aes(reorder(Features,Correlation),Correlation))+
-  geom_bar(stat='identity',aes(fill=Correlation))+
-  coord_flip()+
-  xlab('Features')
 
-## Positions, Age, ORB do not seem important -> remove all positions
-## PF misleading features -> remove PF
-remove_unneed <- function(df){
-  df[,-which(names(df) %in% c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C','Age','ORB.'))]
-}
-train_xdf <- remove_unneed(train_xdf)
-valid_xdf <- remove_unneed(valid_xdf)
-test_xdf <- remove_unneed(test_xdf)
-
-
-#cor bw predictor variables
-cor_x <- cor(train_xdf)
-corrplot(cor_x)
-cor(train_xdf$X2P,train_xdf)
-cor(train_xdf$FT,train_xdf)
-cor(train_xdf$PF,train_xdf)
-# High correlations bw 2P, FT, PF, PTS, FG, MP 
-# Remove FG, FT, 2P
-remove_highcor <- function(df){
-  df[,-which(names(df) %in% c('FT','FG','X2P'))]
-}
-train_xdf <- remove_highcor(train_xdf)
-valid_xdf <- remove_highcor(valid_xdf)
-test_xdf <- remove_highcor(test_xdf)
-names(train_xdf)
-
-
-##Visualization
+#### Visualization ####
+## Pair visualization ##
 vis_train <- all_set[train_index,]
 vis_train$pri_pos <- sepPos[train_index,]$set_x.Pos_1 
-#sum(is.na(vis_train$WS2))
-#names(vis_train)
-#head(vis_train[,c('PTS_AT','WS2')])
 
-# PTS distribution
+# PTS distribution #
 vis_train %>%
   ggplot(aes(PTS))+
   geom_histogram()
@@ -210,14 +147,14 @@ vis_train %>%
   ggplot(aes(pri_pos,PTS))+
   geom_boxplot()
 
-# PTS v. WS2
+# PTS v. WS2 #
 vis_train %>%
   filter(PTS>15,MP>15)%>%
   ggplot(aes(PTS,WS2))+
   geom_jitter(aes(col=pri_pos),alpha=0.5)
 
-  
-# PTS/AT v. WS2 by positions
+
+# PTS/AT v. WS2 by positions #
 #2P
 vis_train %>%
   filter(PTS>160,MP>160)%>%
@@ -234,15 +171,14 @@ vis_train %>%
   facet_wrap(~pri_pos)+
   ylab('WS')
 
-# 3P%  by positions
+# 3P%  by positions #
 vis_train %>%
   filter(PTS>160,MP>160)%>%
   ggplot(aes(pri_pos,`3P%`))+
   geom_boxplot()+
   xlab('Positions')
 
-
-# DRB v. 2P 
+# DRB v. 2P #
 vis_train %>%
   filter(MP>160,WS2>3,PTS>800)%>%
   ggplot(aes(pri_pos,DRB+ORB))+
@@ -250,9 +186,44 @@ vis_train %>%
   xlab('Position')+
   ylab('Rebounds')
 
+## Correlation matrices ## 
+#cor bw WS and predictor variables
+cor_xy <- cor(train_ydf,train_xdf)
+corrplot(cor_xy)
+as.tibble(cor_xy) %>%
+  gather('Features','Correlation') %>%
+  arrange(Correlation)%>%
+  ggplot(aes(reorder(Features,Correlation),Correlation))+
+  geom_bar(stat='identity',aes(fill=Correlation))+
+  coord_flip()+
+  xlab('Features')
+# Positions, Age, ORB do not seem important -> remove all positions
+# PF misleading features -> remove PF
+remove_unneed <- function(df){
+  df[,-which(names(df) %in% c('pos.PG','pos.SG','pos.SF','pos.PF','pos.C','Age','ORB.'))]
+}
+train_xdf <- remove_unneed(train_xdf)
+valid_xdf <- remove_unneed(valid_xdf)
+test_xdf <- remove_unneed(test_xdf)
+
+## cor bw predictor variables ##
+cor_x <- cor(train_xdf)
+corrplot(cor_x)
+cor(train_xdf$X2P,train_xdf)
+cor(train_xdf$FT,train_xdf)
+cor(train_xdf$PF,train_xdf)
+# High correlations bw 2P, FT, PF, PTS, FG, MP 
+# Remove FG, FT, 2P
+remove_highcor <- function(df){
+  df[,-which(names(df) %in% c('FT','FG','X2P'))]
+}
+train_xdf <- remove_highcor(train_xdf)
+valid_xdf <- remove_highcor(valid_xdf)
+test_xdf <- remove_highcor(test_xdf)
+names(train_xdf)
 
 
-## Dimensional Reduction
+## Dimensional Reduction ##
 # not suitable for dimensional reduction when there is low correlations
 # between predictor variables
 #train_xdf_dm <- train_xdf
@@ -274,30 +245,30 @@ vis_train %>%
 #)
 
 
-
-#### MODEL ####
-#names(train_xdf)
-#names(train_ydf)
-## Data scaling
+#### DATA PREPARATION ####
+## Data scaling ##
 norm_values <- preProcess(train_xdf,method=c('range')) 
 train_norm_xdf <- predict(norm_values,train_xdf)
 valid_norm_xdf <- predict(norm_values,valid_xdf)
 test_norm_xdf <- predict(norm_values,test_xdf)
+
+
+#### MODEL ####
 ## WS2 ##
-summary(train_ydf$WS2)
+#summary(train_ydf$WS2)
 #Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 #-1.600   0.500   2.200   3.038   4.600  20.400
-hist(train_ydf$WS2)
-sd(train_ydf$WS2)
+#hist(train_ydf$WS2)
+#sd(train_ydf$WS2)
 # 3.16166
-summary(valid_ydf$WS2)
+#summary(valid_ydf$WS2)
 #Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 #-0.900   0.500   2.300   3.152   4.900  21.200 
-sd(valid_ydf$WS2)
+#sd(valid_ydf$WS2)
 # 3.178022
 
 
-#### MODEL CANDIDATES ####
+### MODEL CANDIDATES ###
 #(1)
 ## LINEAR REGRESSION ##
 #lm_nba <- lm(WS2 ~ .,data=cbind(train_ydf,train_norm_xdf))
@@ -307,12 +278,6 @@ lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
                   method = 'cv',number = 10,
                   verboseIter = TRUE
                 ))
-#lm_nba <- train(WS2 ~ .,cbind(train_ydf,train_norm_xdf),
- #               method='lm',
-  #              trControl = trainControl(
-   #               method = 'repeatedcv',number = 10,
-    #              verboseIter = TRUE, repeats=5
-     #           ))
 #summary(lm_nba)
 # test on valid data
 pred_lm_valid <- predict(lm_nba,valid_norm_xdf)
@@ -397,6 +362,7 @@ poly_svm_valid
 resid_polyr_svm_valid <- valid_ydf$WS2 - pred_polyr_svm_valid
 hist(resid_polyr_svm_valid)
 
+
 # (6)
 ## RANDOM FOREST ##
 set.seed(1234)
@@ -436,16 +402,15 @@ nn_valid
 #0.1041892 2.225789 1.644531 NaN  Inf
 
 
-
-### COMPARE MODELS ###
-# Training data
+### EVALUATE MODELS ###
+## Train data ##
 results <- resamples(list(linear_model=lm_nba, gradient_boosting=sgd_nba,
                           reg_tree=tree_nba, linear_svm=linear_svm_nba,
                           poly_svm=poly_svm_nba, random_forest=rf_nba,
                           neural_net=nn_nba))
 summary(results,metric=c('RMSE','MAE'))
 bwplot(results,metric=c('RMSE','MAE'))
-# Valid data
+## Valid data ##
 metrics_valid <- tribble(~Model,~MAE,~RMSE,
                 'linear_model',as.data.frame(lm_valid)$MAE,as.data.frame(lm_valid)$RMSE,
                 'gradient_boosting',as.data.frame(sgd_valid)$MAE,as.data.frame(sgd_valid)$RMSE,
@@ -460,14 +425,14 @@ metrics_valid %>%
   geom_point(aes(y=Value,col=Metrics),size=3)+
   theme(axis.text.x = element_text(angle=30))
 as.data.frame(metrics_valid)
+# MODEL sELECTION: Gradient Boosting Machine
 
 
-
-## MODEL TUNING ##
-# Using train() (however, Shrinkage and n.minobsinnode was held constant at 0.1 and 10)
+### MODEL TUNING ###
+## Using train() ##
+# (however, Shrinkage and n.minobsinnode was held constant at 0.1 and 10)
 training_ydf <- rbind(train_ydf,valid_ydf)
 training_norm_xdf <- rbind(train_norm_xdf,valid_norm_xdf)
-
 set.seed(1234)  
 sgd_tuning <- train(WS2 ~ .,cbind(training_ydf,training_norm_xdf),
                     method='gbm',tuneLength=20,
@@ -480,7 +445,7 @@ plot(sgd_tuning)
 summary(sgd_tuning)
 
 
-# using gbm()
+## using gbm() ##
 hyper_grid <- expand.grid(
   shrinkage = c(.01, .1, .3),
   interaction.depth = c(1,2,3,4,5),
@@ -490,7 +455,6 @@ hyper_grid <- expand.grid(
   min_RMSE = 0                     # a place to dump results
 )
 nrow(hyper_grid)
-
 for(i in 1:nrow(hyper_grid)) {
     # reproducibility
   set.seed(1234)
@@ -514,16 +478,16 @@ for(i in 1:nrow(hyper_grid)) {
   hyper_grid$min_RMSE[i] <- sqrt(gbm.tune$cv.error[hyper_grid$optimal_trees[i]])
 }
 
+## Top 10 ##
 hyper_grid %>%
   arrange(min_RMSE)%>%
   top_n(-10,wt=min_RMSE)
 
-## Train final model
+
+### Train final model ###
 # for reproducibility
 set.seed(1234)
-
 # train GBM model
-
 nba.fit.final <- gbm(
   formula = WS2 ~ .,
   distribution = "gaussian",
@@ -537,16 +501,17 @@ nba.fit.final <- gbm(
   n.cores = NULL, # will use all cores by default
   verbose = FALSE
 )
-
 pred_training <- predict(nba.fit.final,n.trees = nba.fit.final$n.trees,training_norm_xdf)
 pred_training_metrics <- accuracy(pred_training,training_ydf$WS2)
 pred_training_metrics
 
-# save model to disk
+
+### save model to disk ###
 saveRDS(nba.fit.final,"~/TTU/5381/nba/isqs5381_summer19nn/nba.fit.finalModel.rds")
 #read mode: readRDS("~/TTU/5381/nba/isqs5381_summer19nn/nba.fit.finalModel.rds")
 
-## Feature importance
+
+### Features importance ###
 par(mar = c(5, 5, 1, 1))
 summary(
   nba.fit.final, 
@@ -555,14 +520,15 @@ summary(
   las = 1
 )
 
-## Explaination for why 3P is not relatively important in model
-# 2P v. 3P
+
+## Explaination for why 3P is not relatively important in model ##
+# 2P v. 3P 
 nba_since_2013 <- set_explore[set_explore$Year>2012,]
 sum(nba_since_2013$`2P`)/sum(nba_since_2013$`3P`)
 
 
 
-#### EVALUATION ####
+#### FINAL EVALUATION ####
 # evaluate final model on Test data
 pred_test <- predict(nba.fit.final, n.trees = nba.fit.final$n.trees,test_norm_xdf)
 pred_metrics_test <- accuracy(pred_test,test_ydf$WS2)
