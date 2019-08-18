@@ -150,7 +150,7 @@ nba_8317_all.hist(figsize=(20,20))
 #plt.savefig('hist_project')
 
 
-### REGRESSION ###
+### DATA CLEANING ###
 ## Objective: predict the W/S of the next season
 ## Lag WS variable back to previous observation
 # Index for each players
@@ -164,8 +164,13 @@ nba_stats = pd.merge(nba_stats,nba_copy,how='left',left_on=['Player_','Index_p']
 #nba_stats[['Player_','Index_p','WS','Index_p2','WS2']]
 # Drop the last season of each players or only 1-year players
 nba_stats_rm = nba_stats.dropna(subset=['WS2']).copy()
+# correlation between all_star and WS in the next season
+nba_stats_rm['WS2'].corr(nba_stats_rm['all_star'])
+
 #nba_stats_rm.info()
 nba_stats_rm.drop(['WS','Player_2','Index_p2','all_star','Index_p'],axis=1,inplace=True)
+
+
 
 ## Because of limited time for project and many missing values from previous periods
 ## We only focus on analyzing the data from 1983-2016
@@ -177,10 +182,14 @@ nba_8316 =  nba_stats_rm[nba_stats_rm['Year']>1982].copy()
 #nba_8316.hist()
 # most total indicators e.g. pts, 2p, 3p, ... are right-skewed  
 # thus it is better to average these total indicators by Games played in given season  
+
 ### EXPORT DATASETS TO DEVELOP MODELS IN R ###
 # All set    
 nba_8316.to_csv(os.path.join(file_path_local,r'nba_8316.csv'),index=False)
 
+
+
+### MODEL DEVELOPMENT ### --- IN PROGRESS ---
 
 ## Split training-test sets as ratio of 80-20, stratied by Year 
 split = StratifiedShuffleSplit(n_splits=1,test_size=0.2,random_state=25)  
@@ -201,13 +210,6 @@ split_train = StratifiedShuffleSplit(n_splits=1,test_size=0.1,random_state=25)
 for ttrain_index, tvalid_index in split_train.split(strat_train_set,strat_train_set['Year']):
     ttrain_set = strat_train_set.iloc[ttrain_index]
     tvalid_set = strat_train_set.iloc[tvalid_index]
-
-
-
-#### DATA VISUALIZATION ####
-
-
-
 
 
 

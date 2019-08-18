@@ -31,6 +31,13 @@ set_explore <- read_csv(paste0(path,'nba_8317_explore.csv'))
 summary(set_explore[,-c(1,2,3,4)])
 #nrow(all_set)
 
+## All-star v. WS ##
+cor(set_explore$all_star,set_explore$WS)
+
+## All-star distribution ##
+as_only <- set_explore[set_explore$all_star==1,]
+summary(as_only)
+
 ## Histogram of WS ##
 set_explore %>%
   ggplot(aes(WS))+
@@ -221,6 +228,9 @@ train_xdf <- remove_highcor(train_xdf)
 valid_xdf <- remove_highcor(valid_xdf)
 test_xdf <- remove_highcor(test_xdf)
 names(train_xdf)
+
+## Convert values to average rather than seasonal data ##
+
 
 
 ## Dimensional Reduction ##
