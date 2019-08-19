@@ -16,7 +16,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler        
 from sklearn.impute import SimpleImputer
-from sklearn.pipeline import FeatureUnion    
 
 
 
@@ -241,6 +240,7 @@ sns.heatmap(cor_matrix)
 # remove G 
 # remove ORB%, BLK%, TOV, 3P%, Age, Year
 
+
     
 #### DATA CLEANING ####
 ## Feature selection ##
@@ -286,28 +286,6 @@ final_xvab = ["ave_MP","ave_PTS","FG%",
               "FT%","ave_AST","AST%","ave_BLK",
               "ave_DRB","DRB%","ave_ORB","TOV%",
               "ave_STL","STL%","ave_PF"]
-         
-    
-## Create Dummy variables for Position - Pos
-#class dummy_pos(BaseEstimator,TransformerMixin):
-#    def __init__(self):
-#        self._pos = ['PG','SG','SF','PF','C']
-#    def fit(self,X,y=None):
-#        return self
-#    def transform(self,X,y=None):
-#        for i in self._pos:
-#            X.assign(i=0)
-#        for i, pos in enumerate(X.Pos):
-#            indices = X.columns.get_indexer(pos.split('-'))
-#            X.iloc[i,indices] = 1
-#        return X   
-#from sklearn.preprocessing import MultiLabelBinarizer
-#multi = MultiLabelBinarizer(classes=['PG','SG','SF','PF','C'])
-#multi.fit_transform(ttrain_set['Pos'])
-#ttrain_set['Pos'].head()
- 
-       
-
 
 ## Pipeline ##
 num_pipeline = Pipeline([('features_select',xdfselector(num_feature_names)),
@@ -316,26 +294,17 @@ num_pipeline = Pipeline([('features_select',xdfselector(num_feature_names)),
                          ('missing_values',SimpleImputer(strategy='constant',fill_value=0)),
                          ('feature_range',MinMaxScaler())])
 num_df = num_pipeline.fit_transform(ttrain_set) 
-
-cat_pipeline = Pipeline([('features_select',xdfselector(cat_feature_names)),
-                         ('dummy_variables',MultiLabelBinarizer()),
-                         ('missing_values',SimpleImputer(strategy='constant',fill_value=0))])    
-
-    
-    
-cat_pipeline.fit_transform(ttrain_set)
-preprocess_pipeline=FeatureUnion(transformer_list=[
-        ('num_pipeline',num_pipeline),
-        ('cat_pipeline',cat_pipeline)])
-    
-x_train = preprocess_pipeline.fit_transform(ttrain_set)   
+## Total number predictor variables = 18
 
 
 
 
 
 
- 
+
+
+
+
  
 
  
