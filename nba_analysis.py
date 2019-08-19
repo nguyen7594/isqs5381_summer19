@@ -13,6 +13,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MinMaxScaler        
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import FeatureUnion    
+
+
 
 
 ### IMPORT CSV FILES
@@ -229,16 +235,13 @@ sns.heatmap(cor_matrix)
 # remove ORB%, BLK%, TOV, 3P%, Age, Year
 
     
-    
-
-
-
 #### DATA CLEANING ####
 ## Feature selection ##
 num_feature_names = ["G","MP","PTS","FG%",
-                     "2P","2P%","3P","FT","FT%","AST","AST%",
-                     "BLK","DRB","DRB%","ORB","STL","STL%",
-                     "TOV%","PF"]
+                     "2P","2P%","3P","FT",
+                     "FT%","AST","AST%","BLK",
+                     "DRB","DRB%","ORB","TOV%",
+                     "STL","STL%","PF"]
 cat_feature_names = ['Pos']
 
 
@@ -251,9 +254,10 @@ class xdfselector(BaseEstimator,TransformerMixin):
         return X[self._feature_names]
 
 ## Average some variables:
-ave_feature = ["MP","PTS","FG",
-              "2P","3P","FT","AST",
-              "BLK","DRB","ORB","STL","PF"]
+ave_feature = ["MP","PTS","2P",
+              "3P","FT","AST",
+              "BLK","DRB","ORB",
+              "STL","PF"]
         
 class ave_xvab(BaseEstimator,TransformerMixin):
     def __init__(self,ave_feature):
@@ -277,25 +281,27 @@ class ave_xvab(BaseEstimator,TransformerMixin):
 #            indices = X.columns.get_indexer(pos.split('-'))
 #            X.iloc[i,indices] = 1
 #        return X   
-from sklearn.preprocessing import MultiLabelBinarizer
-multi = MultiLabelBinarizer(classes=['PG','SG','SF','PF','C'])
-multi.fit_transform(ttrain_set['Pos'])
-ttrain_set['Pos'].head()
+#from sklearn.preprocessing import MultiLabelBinarizer
+#multi = MultiLabelBinarizer(classes=['PG','SG','SF','PF','C'])
+#multi.fit_transform(ttrain_set['Pos'])
+#ttrain_set['Pos'].head()
  
        
-## Pipeline
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import MinMaxScaler        
-from sklearn.impute import SimpleImputer
-
+## Pipeline ##
 num_pipeline = Pipeline([('features_select',xdfselector(num_feature_names)),
                          ('average_values',ave_xvab(ave_feature)),
                          ('missing_values',SimpleImputer(strategy='constant',fill_value=0)),
                          ('feature_range',MinMaxScaler())])    
+num_df = num_pipeline.fit_transform(ttrain_set) 
+num_df[:,4]
+    
+
 cat_pipeline = Pipeline([('features_select',xdfselector(cat_feature_names)),
                          ('dummy_variables',MultiLabelBinarizer()),
                          ('missing_values',SimpleImputer(strategy='constant',fill_value=0))])    
-from sklearn.pipeline import FeatureUnion    
+
+    
+    
 cat_pipeline.fit_transform(ttrain_set)
 preprocess_pipeline=FeatureUnion(transformer_list=[
         ('num_pipeline',num_pipeline),
