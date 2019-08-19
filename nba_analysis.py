@@ -10,7 +10,9 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
 ### IMPORT CSV FILES
@@ -193,9 +195,9 @@ nba_8316.to_csv(os.path.join(file_path_local,r'nba_8316.csv'),index=False)
 
 ## Split training-test sets as ratio of 80-20, stratied by Year 
 split = StratifiedShuffleSplit(n_splits=1,test_size=0.2,random_state=25)  
-for train_index, test_index in split.split(nba_8716,nba_8716['Year']):
-    strat_train_set = nba_8716.iloc[train_index]
-    strat_test_set = nba_8716.iloc[test_index]
+for train_index, test_index in split.split(nba_8316,nba_8316['Year']):
+    strat_train_set = nba_8316.iloc[train_index]
+    strat_test_set = nba_8316.iloc[test_index]
 #nba_8716.info()    
 #strat_train_set.info()  
 #strat_train_set.head()  
@@ -205,24 +207,40 @@ for train_index, test_index in split.split(nba_8716,nba_8716['Year']):
 #strat_train_set['Year'].value_counts()/len(strat_train_set)
 #strat_test_set['Year'].value_counts()/len(strat_test_set)
 
-# Split training-validation sets as ratio 90-10, stratied by Year     
-split_train = StratifiedShuffleSplit(n_splits=1,test_size=0.1,random_state=25)  
+# Split training-validation sets as ratio 80-10, stratied by Year     
+split_train = StratifiedShuffleSplit(n_splits=1,test_size=0.2,random_state=25)  
 for ttrain_index, tvalid_index in split_train.split(strat_train_set,strat_train_set['Year']):
     ttrain_set = strat_train_set.iloc[ttrain_index]
     tvalid_set = strat_train_set.iloc[tvalid_index]
+## train: ttrain_set, valid: tvalid_set, test: strat_test_set
+    
+#### DATA VISUALIZATION ####
+cor_matrix = strat_train_set.corr()
+# WS2 correlation
+cor_matrix['WS2'].plot.barh(figsize=(10,8))
+#plt.savefig('WS2_cor')
+# all correlations
+plt.figure(figsize=(15,15))
+sns.heatmap(cor_matrix)
+#plt.savefig('all_cor')
+# remove FG, keep PTS only
+# convert total indicators and Minitues to average per G
+# remove G 
+# remove ORB%, BLK%, TOV, 3P%, Age, Year
 
+    
+    
 
 
 
 #### DATA CLEANING ####
 ## Feature selection ##
-num_feature_names = ["G","MP","Age","PTS","FG","FG%",
-           "2P","2P%","3P","3P%","FT","FT%","AST","AST%",
-           "BLK","BLK%","DRB","DRB%","ORB","ORB%","STL","STL%",
-           "TOV%","PF"]
+num_feature_names = ["G","MP","PTS","FG%",
+                     "2P","2P%","3P","FT","FT%","AST","AST%",
+                     "BLK","DRB","DRB%","ORB","STL","STL%",
+                     "TOV%","PF"]
 cat_feature_names = ['Pos']
 
-from sklearn.base import BaseEstimator, TransformerMixin
 
 class xdfselector(BaseEstimator,TransformerMixin):
     def __init__(self,feature_names):
