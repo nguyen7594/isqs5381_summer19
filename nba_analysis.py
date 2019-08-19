@@ -218,9 +218,16 @@ split_train = StratifiedShuffleSplit(n_splits=1,test_size=0.2,random_state=25)
 for ttrain_index, tvalid_index in split_train.split(strat_train_set,strat_train_set['Year']):
     ttrain_set = strat_train_set.iloc[ttrain_index]
     tvalid_set = strat_train_set.iloc[tvalid_index]
-## train: ttrain_set, valid: tvalid_set, test: strat_test_set
+## 3 datasets: train: ttrain_set, valid: tvalid_set, test: strat_test_set
+    
+    
+    
     
 #### DATA VISUALIZATION ####
+# Missing values
+na_cnt = strat_train_set.isnull().sum()    
+na_cnt.plot.barh(figsize=(10,8))
+# Correlation matrix
 cor_matrix = strat_train_set.corr()
 # WS2 correlation
 cor_matrix['WS2'].plot.barh(figsize=(10,8))
@@ -254,19 +261,32 @@ class xdfselector(BaseEstimator,TransformerMixin):
         return X[self._feature_names]
 
 ## Average some variables:
-ave_feature = ["MP","PTS","2P",
-              "3P","FT","AST",
-              "BLK","DRB","ORB",
-              "STL","PF"]
-        
 class ave_xvab(BaseEstimator,TransformerMixin):
-    def __init__(self,ave_feature):
-        self._ave_feature = ave_feature
     def fit(self,X,y=None):
         return self
     def transform(self,X,y=None):
-        X.loc[:,self._ave_feature] = X.loc[:,self._ave_feature]/X.loc[:,"G"]
-        return X
+        ave_MP = X.loc[:,"MP"]/X.loc[:,"G"]
+        ave_PTS = X.loc[:,"PTS"]/X.loc[:,"G"]
+        ave_2P = X.loc[:,"2P"]/X.loc[:,"G"]
+        ave_3P = X.loc[:,"3P"]/X.loc[:,"G"]
+        ave_FT = X.loc[:,"FT"]/X.loc[:,"G"]
+        ave_AST = X.loc[:,"AST"]/X.loc[:,"G"]
+        ave_BLK = X.loc[:,"BLK"]/X.loc[:,"G"]
+        ave_DRB = X.loc[:,"DRB"]/X.loc[:,"G"]
+        ave_ORB = X.loc[:,"ORB"]/X.loc[:,"G"]
+        ave_STL = X.loc[:,"STL"]/X.loc[:,"G"]
+        ave_PF = X.loc[:,"PF"]/X.loc[:,"G"]
+        return pd.concat([X,pd.DataFrame({'ave_MP':ave_MP,'ave_PTS':ave_PTS,'ave_2P':ave_2P,
+                                          'ave_3P':ave_3P,'ave_FT':ave_FT,'ave_AST':ave_AST,
+                                          'ave_BLK':ave_BLK,'ave_DRB':ave_DRB,'ave_ORB':ave_ORB,
+                                          'ave_STL':ave_STL,'ave_PF':ave_PF})],axis=1)
+# Final numerical variables used for model development        
+final_xvab = ["ave_MP","ave_PTS","FG%",
+              "ave_2P","2P%","ave_3P","ave_FT",
+              "FT%","ave_AST","AST%","ave_BLK",
+              "ave_DRB","DRB%","ave_ORB","TOV%",
+              "ave_STL","STL%","ave_PF"]
+         
     
 ## Create Dummy variables for Position - Pos
 #class dummy_pos(BaseEstimator,TransformerMixin):
@@ -287,14 +307,15 @@ class ave_xvab(BaseEstimator,TransformerMixin):
 #ttrain_set['Pos'].head()
  
        
+
+
 ## Pipeline ##
 num_pipeline = Pipeline([('features_select',xdfselector(num_feature_names)),
-                         ('average_values',ave_xvab(ave_feature)),
+                         ('average_values',ave_xvab()),
+                         ('final_features_select',xdfselector(final_xvab)),
                          ('missing_values',SimpleImputer(strategy='constant',fill_value=0)),
-                         ('feature_range',MinMaxScaler())])    
+                         ('feature_range',MinMaxScaler())])
 num_df = num_pipeline.fit_transform(ttrain_set) 
-num_df[:,4]
-    
 
 cat_pipeline = Pipeline([('features_select',xdfselector(cat_feature_names)),
                          ('dummy_variables',MultiLabelBinarizer()),
