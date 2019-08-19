@@ -16,6 +16,10 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler        
 from sklearn.impute import SimpleImputer
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import SGDRegressor
+
 
 
 
@@ -241,6 +245,7 @@ sns.heatmap(cor_matrix)
 # remove ORB%, BLK%, TOV, 3P%, Age, Year
 
 
+
     
 #### DATA CLEANING ####
 ## Feature selection ##
@@ -295,15 +300,28 @@ num_pipeline = Pipeline([('features_select',xdfselector(num_feature_names)),
                          ('feature_range',MinMaxScaler())])
 num_df = num_pipeline.fit_transform(ttrain_set) 
 ## Total number predictor variables = 18
+## Label
+ws_label = ttrain_set['WS2'].copy()
 
 
 
 
+#### MODEL SELECTION ####
+## Linear Regression
+lin_reg = LinearRegression()
+lin_reg_score = cross_val_score(lin_reg,num_df,ws_label,scoring='neg_mean_squared_error',cv=10)
+lin_scores = np.sqrt(-lin_reg_score)
+lin_scores.mean() #2.1880996328813636
+lin_scores.std()  #0.07587824076684392   
 
+## Stochastic Gradient Descent
+sgd_reg = SGDRegressor(n_iter=50, penalty=None, eta0=0.1)
+sgd_reg_score = cross_val_score(sgd_reg,num_df,ws_label,scoring='neg_mean_squared_error',cv=10)
+sgd_scores = np.sqrt(-sgd_reg_score)
+sgd_scores.mean() #2.192746433953347
+sgd_scores.std()  #0.07518484726380842
 
-
-
-
+## Random Forest
 
  
 
