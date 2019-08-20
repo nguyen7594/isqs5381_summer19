@@ -307,19 +307,29 @@ ws_label = ttrain_set['WS2'].copy()
 
 
 #### MODEL SELECTION ####
-## Linear Regression
+## Linear Regression (plain)
 lin_reg = LinearRegression()
 lin_reg_score = cross_val_score(lin_reg,num_df,ws_label,scoring='neg_mean_squared_error',cv=10)
 lin_scores = np.sqrt(-lin_reg_score)
 lin_scores.mean() #2.1880996328813636
-lin_scores.std()  #0.07587824076684392   
+lin_scores.std()  #0.07587824076684392 
 
-## Stochastic Gradient Descent
-sgd_reg = SGDRegressor(n_iter=50, penalty=None, eta0=0.1)
+# Ridge Regression 
+
+# Lasso Regression
+
+# Elastic Net 
+
+
+
+## Stochastic Gradient Descent (None Regularization)
+sgd_reg = SGDRegressor(n_iter=50, penalty=None, eta0=0.1,random_state=25)
 sgd_reg_score = cross_val_score(sgd_reg,num_df,ws_label,scoring='neg_mean_squared_error',cv=10)
 sgd_scores = np.sqrt(-sgd_reg_score)
 sgd_scores.mean() #2.192746433953347
 sgd_scores.std()  #0.07518484726380842
+
+
 
 ## Random Forest
 
