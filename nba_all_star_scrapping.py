@@ -11,15 +11,16 @@ import csv
 import time
 import numpy as np
 
-### URL AND YEARS NEEDED FOR SCRAPPING
+##### ---------------------- ALL STAR LIST ----------------------------#####
+### URL AND YEARS NEEDED FOR SCRAPPING Season 1950-51 to 2018-19: Years ranges from 1951-2019 
 url = 'https://basketball.realgm.com/nba/allstar/game/rosters/'
 yearss = []
-for i in range(1982,2000):
+for i in range(1951,2019):
     yearss.append(i)
-yearss.append(2017)    
+
 
 ### FILE FOLDER AND CSV FILE
-file_path = 'C:\\Users\\nguye\\Documents\\TTU\\5381\\nba\\'
+file_path = 'C:\\Users\\nguye\\Documents\\TTU\\5381\\nba\\isqs5381_summer19nn\\src'
 file_name = 'NBA_All_Star_Games_addition.csv'
 
 ### CHECK STATUS
@@ -31,7 +32,7 @@ def statuscheck(res):
 
 ### GET PAGE
 def contentget(yr):
-    urlget = url + str(yr+1)
+    urlget = url + str(yr)
     res = r.get(urlget)
     statuscheck(res)
     soup = BeautifulSoup(res.content,'lxml')
@@ -62,4 +63,6 @@ with open(file_path_complete, 'w',newline = '') as file1:
                 info_list.insert(0,yr)     
                 datawriter.writerow(info_list)    
         time.sleep(np.random.randint(30,60))        
+
+
 
