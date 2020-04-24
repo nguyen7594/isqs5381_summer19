@@ -17,9 +17,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.pipeline import FeatureUnion
 from sklearn.preprocessing import MinMaxScaler        
 from sklearn.impute import SimpleImputer
-from sklearn.model_selection import cross_val_score
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import SGDRegressor
 
 
 ### IMPORT CSV FILES
@@ -192,7 +189,7 @@ nba_8316.to_csv(os.path.join(file_path_local,r'nba_8316.csv'),index=False)
 
 
 
-### MODEL DEVELOPMENT ### --- IN PROGRESS ---
+### MODEL DEVELOPMENT ### 
 
 ## Split training-test sets as ratio of 80-20, stratied by Year 
 split = StratifiedShuffleSplit(n_splits=1,test_size=0.2,random_state=25)  
@@ -297,34 +294,8 @@ ws_label = ttrain_set['WS2'].copy()
 
 
 
-
-#### MODEL SELECTION ####
-## Linear Regression (plain)
-lin_reg = LinearRegression()
-lin_reg_score = cross_val_score(lin_reg,num_df,ws_label,scoring='neg_mean_squared_error',cv=10)
-lin_scores = np.sqrt(-lin_reg_score)
-lin_scores.mean() #2.1880996328813636
-lin_scores.std()  #0.07587824076684392 
-
-# Ridge Regression 
-
-# Lasso Regression
-
-# Elastic Net 
-
-
-
-## Stochastic Gradient Descent (None Regularization)
-sgd_reg = SGDRegressor(n_iter=50, penalty=None, eta0=0.1,random_state=25)
-sgd_reg_score = cross_val_score(sgd_reg,num_df,ws_label,scoring='neg_mean_squared_error',cv=10)
-sgd_scores = np.sqrt(-sgd_reg_score)
-sgd_scores.mean() #2.192746433953347
-sgd_scores.std()  #0.07518484726380842
-
-
-
-
-#### ------------ CONFERENCE PAPER ------------ #### 
+####---------------------------------------------------------------------------------------------###
+#### ----------------------------------- CONFERENCE PAPER ------------------------------------ #### 
 ### OBJECTIVE: PREDICT NBA ALL STARS BASED ON PREVIOUS SEASON STATS
 ### DATA IMPORT
 file_1 = 'Seasons_Stats.csv'
@@ -344,7 +315,7 @@ all_star_list.info()
 all_nba_list = pd.read_csv(file_path_local+file_5)
 all_nba_list.info()
  
-### DATA CLEANING --------------------------------------------------------------------
+### DATA CLEANING ---------------------------------------------------------------------------------
 ## DATA MERGING
 ## ALL_STAR SHORT_LIST
 all_star_list['all_star'] = 1
@@ -497,34 +468,38 @@ player_lagged_final['all_star_ny'].fillna(0,inplace=True)
 player_lagged_final.fillna(0,inplace=True)
 player_lagged_final.info()
 
-## ------------------------------------------ EXPORT DATA ------------------------------------- ##
+## --------------------------------------- EXPORT CLEAN DATA ---------------------------------- ##
 player_lagged_final.to_csv(os.path.join(file_path_local,r'player_lagged_final.csv'),index=False)
 ## -------------------------------------------------------------------------------------------- ##
 
 
-## ------------------------------------------ IMPORT DATA ------------------------------------- ##
+## ------------------------------------- IMPORT CLEAN DATA ------------------------------------ ##
+file_path_local = 'C:/Users/nguye/Documents/TTU/5381/nba/isqs5381_summer19nn/src/'
+
 player_lagged_final = pd.read_csv(file_path_local+'player_lagged_final.csv')
+player_lagged_final.info() #14178
+player_lagged_final['Year'].value_counts() #1984-2017
 ## -------------------------------------------------------------------------------------------- ##
 
 
 
-## --------------------------------------- DATA MANIPULATION -------------------------------------##
+## -------------------------------------- DATA MANIPULATION -------------------------------------##
 ## CONVERT TOTAL VALUES TO AVERAGE VALUE PER GAME
-player_lagged_final['MP_avg'] = player_lagged_final['MP']/player_lagged_final['G'] # Average Minute per game
-player_lagged_final['PTS_avg'] = player_lagged_final['PTS']/player_lagged_final['G'] # Average Point per game
-player_lagged_final['FG_avg'] = player_lagged_final['FG']/player_lagged_final['G'] # Average Field Goal per game
-player_lagged_final['2P_avg'] = player_lagged_final['2P']/player_lagged_final['G'] # Average 2P per game
-player_lagged_final['3P_avg'] = player_lagged_final['3P']/player_lagged_final['G'] # Average 3P per game
-player_lagged_final['FT_avg'] = player_lagged_final['FT']/player_lagged_final['G'] # Average FT per game
-player_lagged_final['AST_avg'] = player_lagged_final['AST']/player_lagged_final['G'] # Average AST per game
-player_lagged_final['BLK_avg'] = player_lagged_final['BLK']/player_lagged_final['G'] # Average BLK per game
-player_lagged_final['DRB_avg'] = player_lagged_final['DRB']/player_lagged_final['G'] # Average DRB per game
-player_lagged_final['ORB_avg'] = player_lagged_final['ORB']/player_lagged_final['G'] # Average ORB per game
-player_lagged_final['STL_avg'] = player_lagged_final['STL']/player_lagged_final['G'] # Average STL per game
-player_lagged_final['TOV_avg'] = player_lagged_final['TOV']/player_lagged_final['G'] # Average TOV per game
-player_lagged_final['PF_avg'] = player_lagged_final['PF']/player_lagged_final['G'] # Average PF per game
-player_lagged_final[['MP_avg','PTS_avg','FG_avg','2P_avg','3P_avg','FT_avg',
-                     'AST_avg','BLK_avg','DRB_avg','ORB_avg','STL_avg','TOV_avg','PF_avg']].hist(figsize=(9,9))
+#player_lagged_final['MP_avg'] = player_lagged_final['MP']/player_lagged_final['G'] # Average Minute per game
+#player_lagged_final['PTS_avg'] = player_lagged_final['PTS']/player_lagged_final['G'] # Average Point per game
+#player_lagged_final['FG_avg'] = player_lagged_final['FG']/player_lagged_final['G'] # Average Field Goal per game
+#player_lagged_final['2P_avg'] = player_lagged_final['2P']/player_lagged_final['G'] # Average 2P per game
+#player_lagged_final['3P_avg'] = player_lagged_final['3P']/player_lagged_final['G'] # Average 3P per game
+#player_lagged_final['FT_avg'] = player_lagged_final['FT']/player_lagged_final['G'] # Average FT per game
+#player_lagged_final['AST_avg'] = player_lagged_final['AST']/player_lagged_final['G'] # Average AST per game
+#player_lagged_final['BLK_avg'] = player_lagged_final['BLK']/player_lagged_final['G'] # Average BLK per game
+#player_lagged_final['DRB_avg'] = player_lagged_final['DRB']/player_lagged_final['G'] # Average DRB per game
+#player_lagged_final['ORB_avg'] = player_lagged_final['ORB']/player_lagged_final['G'] # Average ORB per game
+#player_lagged_final['STL_avg'] = player_lagged_final['STL']/player_lagged_final['G'] # Average STL per game
+#player_lagged_final['TOV_avg'] = player_lagged_final['TOV']/player_lagged_final['G'] # Average TOV per game
+#player_lagged_final['PF_avg'] = player_lagged_final['PF']/player_lagged_final['G'] # Average PF per game
+#player_lagged_final[['MP_avg','PTS_avg','FG_avg','2P_avg','3P_avg','FT_avg',
+#                    'AST_avg','BLK_avg','DRB_avg','ORB_avg','STL_avg','TOV_avg','PF_avg']].hist(figsize=(9,9))
 
 ## SPLIT TRAIN-TEST DATA
 ## Split train-test sets as ratio of 80-20, stratied by Year 
@@ -533,35 +508,77 @@ for train_index, test_index in split.split(player_lagged_final,player_lagged_fin
     strat_train_set = player_lagged_final.iloc[train_index]
     strat_test_set = player_lagged_final.iloc[test_index]
 
-## IMBALANCE DATA SOLUTION
-# Resampling
-# OVERSAMPLING -----------------------------------------------------------------------------------     
-from sklearn.utils import resample
-# Separate the all-star and non-all-star
-all_star = strat_train_set[strat_train_set['all_star_ny']==1] 
-all_star.info()
-non_all_star = strat_train_set[strat_train_set['all_star_ny']!=1] 
-non_all_star.info()
-# upsampling
-all_star_upsampled = resample(all_star,replace=True,n_samples=len(non_all_star),random_state=25) 
-len(all_star_upsampled)
-all_star_upsampled.info()
-# combining
-train_upsampled = pd.concat([non_all_star,all_star_upsampled])
-train_upsampled.info()
+## IMBALANCE DATA SOLUTION -----------------------------------------------------------------------
+#### VISUALIZATION -------------------------------------------------------------------------------
+## Correlation matrix
+strat_train_set.drop(['MP_avg','PTS_avg','FG_avg','2P_avg','3P_avg','FT_avg',
+                    'AST_avg','BLK_avg','DRB_avg','ORB_avg','STL_avg','TOV_avg','PF_avg'],inplace=True,axis=1)
+cor_tv = strat_train_set.corr()
+cor_tv['all_star_ny'].sort_values().plot.barh(figsize=(10,8))
+cor_tv['all_star_ny'].sort_values()
+plt.figure(figsize=(10,8))
+sns.heatmap(cor_tv)
+## Turnover
+sns.boxplot(strat_train_set['all_star_ny'],strat_train_set['TOV'])
+# TOV is higher for all_star, but if we look at TOV%, the % is lower for all_star
+# which can be explained that superstar players usually control ball most of time in team
+# leading to the higher number of turnovers  
+## PTS v. other scoring variables 
+cor_tv[['PTS','FG','2P','FT']]
+plt.scatter('PTS','FG',c='all_star_ny',data=strat_train_set)
+plt.scatter('PTS','FT',c='all_star_ny',data=strat_train_set)
+plt.scatter('PTS','2P',c='all_star_ny',data=strat_train_set)
+plt.scatter('PTS','2P%',c='all_star_ny',data=strat_train_set)
+plt.scatter('PTS','3P',c='all_star_ny',data=strat_train_set)
+
+## Position 
+## Categorical pipeline for positions
+strat_train_set['Pos'].value_counts()     
+strat_train_set['PF'] = 0  
+strat_train_set.loc[strat_train_set['Pos']=='PF','PF'] = 1  
+strat_train_set['C'] = 0  
+strat_train_set.loc[strat_train_set['Pos']=='C','C'] = 1  
+strat_train_set['SG'] = 0  
+strat_train_set.loc[strat_train_set['Pos']=='SG','SG'] = 1  
+strat_train_set['PG'] = 0
+strat_train_set.loc[strat_train_set['Pos']=='PG','PG'] = 1  
+strat_train_set['SF'] = 0
+strat_train_set.loc[strat_train_set['Pos']=='SF','SF'] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='PF-C',['PF','C']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='SG-PG',['SG','PG']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='SF-SG',['SF','SG']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='PG-SG',['PG','SG']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='C-PF',['PF','C']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='SG-SF',['SG','SF']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='PF-SF',['PF','SF']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='SF-PF',['PF','SF']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='SG-PF',['PF','SG']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='C-SF',['C','SF']] = 1  
+strat_train_set.loc[strat_train_set['Pos']=='PG-SF',['PG','SF']] = 1  
+strat_train_set['PF'].sum()
+strat_train_set['SF'].sum()
+strat_train_set['C'].sum()
+strat_train_set['SG'].sum()
+strat_train_set['PG'].sum()
+cor_pos = strat_train_set[['PF','SF','C','SG','PG']].corrwith(strat_train_set[['all_star_ny']])
+sum(strat_train_set['PF']&strat_train_set['all_star_ny'])
+sum(strat_train_set['SF']&strat_train_set['all_star_ny'])
+sum(strat_train_set['C']&strat_train_set['all_star_ny'])
+sum(strat_train_set['SG']&strat_train_set['all_star_ny'])
+sum(strat_train_set['PG']&strat_train_set['all_star_ny'])
+# There is no evidence to support the contribution of positions on all-star selection
+
 
 ## DATA PROCESSING ------------------------------------------------------------------------------- 
 ## DATA SELECTION 
-## Label variable
-y_train = train_upsampled[['all_star_ny']] 
-
-## Predictor variable
+## DATA TRANSFORMATION FOR PREDICTOR VARIABLES
 # Numerical variables
-num_vab = ['G','MP_avg','Age','PTS_avg','FG_avg','FG%','2P_avg','2P%','3P_avg','3P%',
-            'FT_avg','FT%','AST_avg','AST%','BLK_avg','BLK%','DRB_avg','DRB%','ORB_avg',
-            'ORB%','STL_avg','STL%','TOV_avg','TOV%','PF_avg']
-cat_vab = ['Pos']
+num_vab = ['G','MP','PTS','FG%','2P%','3P','3P%','FT','FT%',
+            'AST','AST%','BLK','BLK%','DRB','DRB%','ORB',
+            'STL','STL%','TOV%','PF']
+#cat_vab = ['Pos']
 
+## Variable selection
 class vab_select(BaseEstimator,TransformerMixin):
     def __init__(self,feature_names):
         self._feature_names = feature_names
@@ -570,76 +587,144 @@ class vab_select(BaseEstimator,TransformerMixin):
     def transform(self,X,y=None):
         return X[self._feature_names]
     
-# Categorical pipeline for positions
-train_upsampled['Pos'].value_counts()     
-train_upsampled['PF'] = 0  
-train_upsampled.loc[train_upsampled['Pos']=='PF','PF'] = 1  
-train_upsampled['C'] = 0  
-train_upsampled.loc[train_upsampled['Pos']=='C','C'] = 1  
-train_upsampled['SG'] = 0  
-train_upsampled.loc[train_upsampled['Pos']=='SG','SG'] = 1  
-train_upsampled['PG'] = 0
-train_upsampled.loc[train_upsampled['Pos']=='PG','PG'] = 1  
-train_upsampled['SF'] = 0
-train_upsampled.loc[train_upsampled['Pos']=='SF','SF'] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='PF-C',['PF','C']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='SG-PG',['SG','PG']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='SF-SG',['SF','SG']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='PG-SG',['PG','SG']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='C-PF',['PF','C']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='SG-SF',['SG','SF']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='PF-SF',['PF','SF']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='SF-PF',['PF','SF']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='SG-PF',['PF','SG']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='C-SF',['C','SF']] = 1  
-train_upsampled.loc[train_upsampled['Pos']=='PG-SF',['PG','SF']] = 1  
+## Categorical pipeline for positions
+#train_upsampled['Pos'].value_counts()     
+#train_upsampled['PF'] = 0  
+#train_upsampled.loc[train_upsampled['Pos']=='PF','PF'] = 1  
+#train_upsampled['C'] = 0  
+#train_upsampled.loc[train_upsampled['Pos']=='C','C'] = 1  
+#train_upsampled['SG'] = 0  
+#train_upsampled.loc[train_upsampled['Pos']=='SG','SG'] = 1  
+#train_upsampled['PG'] = 0
+#train_upsampled.loc[train_upsampled['Pos']=='PG','PG'] = 1  
+#train_upsampled['SF'] = 0
+#train_upsampled.loc[train_upsampled['Pos']=='SF','SF'] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='PF-C',['PF','C']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='SG-PG',['SG','PG']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='SF-SG',['SF','SG']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='PG-SG',['PG','SG']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='C-PF',['PF','C']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='SG-SF',['SG','SF']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='PF-SF',['PF','SF']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='SF-PF',['PF','SF']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='SG-PF',['PF','SG']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='C-SF',['C','SF']] = 1  
+#train_upsampled.loc[train_upsampled['Pos']=='PG-SF',['PG','SF']] = 1  
 
-class position_dummy(BaseEstimator,TransformerMixin):
-    def fit(self,X,y=None):
-        return self
-    def transform(self,X,y=None):
-        X['PF'] = 0  
-        X.loc[X['Pos']=='PF','PF'] = 1  
-        X['C'] = 0  
-        X.loc[X['Pos']=='C','C'] = 1  
-        X['SG'] = 0  
-        X.loc[X['Pos']=='SG','SG'] = 1  
-        X['PG'] = 0
-        X.loc[X['Pos']=='PG','PG'] = 1  
-        X['SF'] = 0
-        X.loc[X['Pos']=='SF','SF'] = 1  
-        X.loc[X['Pos']=='PF-C',['PF','C']] = 1  
-        X.loc[X['Pos']=='SG-PG',['SG','PG']] = 1  
-        X.loc[X['Pos']=='SF-SG',['SF','SG']] = 1  
-        X.loc[X['Pos']=='PG-SG',['PG','SG']] = 1  
-        X.loc[X['Pos']=='C-PF',['PF','C']] = 1  
-        X.loc[X['Pos']=='SG-SF',['SG','SF']] = 1  
-        X.loc[X['Pos']=='PF-SF',['PF','SF']] = 1  
-        X.loc[X['Pos']=='SF-PF',['PF','SF']] = 1  
-        X.loc[X['Pos']=='SG-PF',['PF','SG']] = 1  
-        X.loc[X['Pos']=='C-SF',['C','SF']] = 1  
-        X.loc[X['Pos']=='PG-SF',['PG','SF']] = 1  
-        return np.array(X[['PG','SG','SF','PF','C']])
+#class position_dummy(BaseEstimator,TransformerMixin):
+#    def fit(self,X,y=None):
+#        return self
+#    def transform(self,X,y=None):
+#        X['PF'] = 0  
+#        X.loc[X['Pos']=='PF','PF'] = 1  
+#        X['C'] = 0  
+#        X.loc[X['Pos']=='C','C'] = 1  
+#        X['SG'] = 0  
+#        X.loc[X['Pos']=='SG','SG'] = 1  
+#        X['PG'] = 0
+#        X.loc[X['Pos']=='PG','PG'] = 1  
+#        X['SF'] = 0
+#        X.loc[X['Pos']=='SF','SF'] = 1  
+#        X.loc[X['Pos']=='PF-C',['PF','C']] = 1  
+#        X.loc[X['Pos']=='SG-PG',['SG','PG']] = 1  
+#        X.loc[X['Pos']=='SF-SG',['SF','SG']] = 1  
+#        X.loc[X['Pos']=='PG-SG',['PG','SG']] = 1  
+#       X.loc[X['Pos']=='C-PF',['PF','C']] = 1  
+#        X.loc[X['Pos']=='SG-SF',['SG','SF']] = 1  
+#        X.loc[X['Pos']=='PF-SF',['PF','SF']] = 1  
+#        X.loc[X['Pos']=='SF-PF',['PF','SF']] = 1  
+#        X.loc[X['Pos']=='SG-PF',['PF','SG']] = 1  
+#        X.loc[X['Pos']=='C-SF',['C','SF']] = 1  
+#        X.loc[X['Pos']=='PG-SF',['PG','SF']] = 1  
+#        return np.array(X[['PG','SG','SF','PF','C']])
 
 
 ## DATA PIPELINE
 # Numerical pipeline
 num_pipeline = Pipeline([('feature_seLect',vab_select(num_vab)),
                          ('data_scaling',MinMaxScaler())])        
-num_train = num_pipeline.fit_transform(train_upsampled)  ## Numerical predictor variables
-num_train.shape
+#num_train = num_pipeline.fit_transform(train_upsampled)  ## Numerical predictor variables
+#num_train.shape
 # Categorical pipeline
-cat_vab = ['Pos']
-cat_pipeline = Pipeline([('feature_seLect',vab_select(cat_vab)),
-                         ('dummy_positions',position_dummy())])        
-# Feature Union
-full_pipeline = FeatureUnion(transformer_list=[('numeric_pip',num_pipeline),
-                                                  ('cat_pip',cat_pipeline)])
-x_train = full_pipeline.fit_transform(train_upsampled)
+#cat_pipeline = Pipeline([('feature_seLect',vab_select(cat_vab)),
+#                         ('dummy_positions',position_dummy())])        
+# Feature Union - if using Position categorical variables
+#full_pipeline = FeatureUnion([('numeric_pip',num_pipeline),
+#                                ('cat_pip',cat_pipeline)])
+#x_train = full_pipeline.fit_transform(train_upsampled)
+#x_train.shape
+## FINAL DATASETS FOR OBJECTIVE 2 - CLASSIFICATION MODELS
+#x_train_final = full_pipeline.fit_transform(x_train)
+# Original Data    
+x_train_set_processed = num_pipeline.fit_transform(strat_train_set)    
+x_train_set_processed    
+x_train_set_processed.shape    
+y_train_set = strat_train_set['all_star_ny'].copy()
+y_train_set.shape
+
+x_test_set_processed = num_pipeline.transform(strat_test_set)
+y_test = strat_test_set['all_star_ny']
+
+## SPLIT THE TRAIN-VALID ----------------------------------------------------------------
+split = StratifiedShuffleSplit(n_splits=1,test_size=0.2,random_state=25)
+for train_index, valid_index in split.split(x_train_set_processed,strat_train_set['Year']):
+    x_train = x_train_set_processed[train_index]
+    y_train = np.array(y_train_set.iloc[train_index])
+    x_valid = x_train_set_processed[valid_index]
+    y_valid = np.array(y_train_set.iloc[valid_index])
+
 x_train.shape
+y_train.shape
+
+## RESAMPLING ---------------------------------------------------------------------------
+## SIMPLE OVERSAMPLING     
+from sklearn.utils import resample
+# Separate the all-star and non-all-star
+all_star = x_train[y_train==1]
+#all_star.shape
+non_all_star = x_train[y_train!=1] 
+#non_all_star.shape
+#(y_train!=1).sum()
+
+# upsampling
+all_star_upsampled = resample(all_star,replace=True,n_samples=len(non_all_star),random_state=25) 
+#all_star_upsampled.shape
+
+# combining
+train_upsampled = np.concatenate((non_all_star,all_star_upsampled))
+y_train_upsampled = np.concatenate(([0]*len(non_all_star),[1]*len(all_star_upsampled)))
+#sum(y_train_upsampled==1)
 
 
-## MODELING ------------------------------------------------------------------------------ 
+## SMOTE OVERSAMPLING
+from imblearn.over_sampling import SMOTE
+# Resample the minority class. You can change the strategy to 'auto' if you are not sure.
+sm = SMOTE(sampling_strategy='minority', random_state=25)
+oversampled_trainX, oversampled_trainY = sm.fit_sample(x_train, y_train)
+oversampled_trainX.shape
+oversampled_trainY.shape
+#sum(oversampled_trainY==1)
+
+
+#### ALL DATASETS ####
+## Original Train data
+x_train
+y_train
+## Simple oversampling
+train_upsampled
+y_train_upsampled
+## SMOTE oversampling
+oversampled_trainX
+oversampled_trainY
+## Valid data
+x_valid.shape
+y_valid.shape
+
+
+
+#### MODELING -------------------------------------------------------------------------------------
+#### -------------------------------------- OBJECTIVE 2 ---------------------------------------####
+### OVERSAMPLING ---------------------------------------------------------------------------
 ## Metrics
 # Cross Validation
 from sklearn.model_selection import cross_val_score
@@ -654,100 +739,621 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
 
-## Candidate models
-## SDC Classifier
+## CANDIDATE MODELS
+## SD CLASSIFIER
 from sklearn.linear_model import SGDClassifier
 sgd_clf = SGDClassifier(random_state=25)
-y_train_pred_sgdclf = cross_val_predict(sgd_clf,x_train,y_train,cv=5) 
+# SIMPLE UPSAMPLING --------------------------------------------------------
+y_train_pred_sgdclf = cross_val_predict(sgd_clf,train_upsampled,y_train_upsampled,cv=5) 
 # confusion matrix
-confusion_matrix(y_train,y_train_pred_sgdclf)
-#array([[9459, 1199],
-#       [ 736, 9922]], dtype=int64)
+confusion_matrix(y_train_upsampled,y_train_pred_sgdclf)
+#array([[7559,  960],
+#       [ 753, 7766]], dtype=int64)
 # precision 
-(9922)/(9922+1199) #0.8921
-precision_score(y_train,y_train_pred_sgdclf)
+precision_score(y_train_upsampled,y_train_pred_sgdclf) #0.89
 # recall
-(9922)/(736+9922) #0.9309
-recall_score(y_train,y_train_pred_sgdclf)
+recall_score(y_train_upsampled,y_train_pred_sgdclf) #0.91
 # f1 
-f1_score(y_train,y_train_pred_sgdclf) #0.9112
+f1_score(y_train_upsampled,y_train_pred_sgdclf) #0.90
 # ROC curve 
-roc_auc_score(y_train,y_train_pred_sgdclf) #0.9092
+roc_auc_score(y_train_upsampled,y_train_pred_sgdclf) #0.8995
+# SMOTE UPSAMPLING --------------------------------------------------------
+y_train_pred_sgdclf_smo = cross_val_predict(sgd_clf,oversampled_trainX,oversampled_trainY,cv=5) 
+# confusion matrix
+confusion_matrix(oversampled_trainY,y_train_pred_sgdclf_smo)
+#array([[7447, 1072],
+#       [ 414, 8105]], dtype=int64)
+# precision 
+precision_score(oversampled_trainY,y_train_pred_sgdclf_smo) #0.8831
+# recall
+recall_score(oversampled_trainY,y_train_pred_sgdclf_smo) #0.9514
+# f1 
+f1_score(oversampled_trainY,y_train_pred_sgdclf_smo) #0.916
+# ROC curve 
+roc_auc_score(oversampled_trainY,y_train_pred_sgdclf_smo) #0.9128
+
 
 
 ## Logistic Regression
 from sklearn.linear_model import LogisticRegression 
 log_reg = LogisticRegression(random_state=25,solver='lbfgs') 
-log_reg.fit(x_train,y_train)
-y_train_pred_logreg = cross_val_predict(log_reg,x_train,y_train,cv=5)
+# SIMPLE UPSAMPLING --------------------------------------------------------
+log_reg = LogisticRegression(random_state=25,solver='lbfgs') 
+log_reg.fit(train_upsampled,y_train_upsampled)
+y_train_pred_logreg = cross_val_predict(log_reg,train_upsampled,y_train_upsampled,cv=5)
 # probability
-y_train_proba_logreg = cross_val_predict(log_reg,x_train,y_train,cv=5,method='predict_proba')
-y_train_proba_logreg
+#y_train_proba_logreg = cross_val_predict(log_reg,x_train,y_train,cv=5,method='predict_proba')
+#y_train_proba_logreg
 # confusion matrix
-confusion_matrix(y_train,y_train_pred_logreg)
-#array([[9485, 1173],
-#       [ 726, 9932]], dtype=int64)
+confusion_matrix(y_train_upsampled,y_train_pred_logreg)
+#array([[7566,  953],
+#       [ 683, 7836]], dtype=int64)
 # precision
-precision_score(y_train,y_train_pred_logreg) #0.8944
+precision_score(y_train_upsampled,y_train_pred_logreg) #0.8916
 # recall
-recall_score(y_train,y_train_pred_logreg) #0.9319
+recall_score(y_train_upsampled,y_train_pred_logreg) #0.92
 # f1
-f1_score(y_train,y_train_pred_logreg) #0.9127
+f1_score(y_train_upsampled,y_train_pred_logreg) #0.91
 # ROC curve
-roc_auc_score(y_train,y_train_pred_logreg) #0.9109
+roc_auc_score(y_train_upsampled,y_train_pred_logreg) #0.904
+# SMOTE UPSAMPLING --------------------------------------------------------
+log_reg_smo = LogisticRegression(random_state=25,solver='lbfgs') 
+log_reg_smo.fit(oversampled_trainX,oversampled_trainY)
+y_train_pred_logreg_smo = cross_val_predict(log_reg_smo,oversampled_trainX,oversampled_trainY,cv=5)
+# probability
+#y_train_proba_logreg = cross_val_predict(log_reg,x_train,y_train,cv=5,method='predict_proba')
+#y_train_proba_logreg
+# confusion matrix
+confusion_matrix(oversampled_trainY,y_train_pred_logreg_smo)
+#array([[7629,  890],
+#       [ 542, 7977]], dtype=int64)
+# precision
+precision_score(oversampled_trainY,y_train_pred_logreg_smo) #0.8996
+# recall
+recall_score(oversampled_trainY,y_train_pred_logreg_smo) #0.9364
+# f1
+f1_score(oversampled_trainY,y_train_pred_logreg_smo) #0.9176
+# ROC curve
+roc_auc_score(oversampled_trainY,y_train_pred_logreg_smo) #0.9160
+
 
 
 ## Support Vector Machine: regularize the C for Hard-Soft margin classification
-# Linear SVC
+## Linear SVC-----------------------------------------------------------------------------------
 from sklearn.svm import LinearSVC
-linearsvm_clf = LinearSVC(C=1,loss='hinge')
-y_train_pred_logreg = cross_val_predict(linearsvm_clf,x_train,y_train,cv=5)
-confusion_matrix(y_train,y_train_pred_logreg)
-precision_score(y_train,y_train_pred_logreg) #0.8851
-recall_score(y_train,y_train_pred_logreg) #0.9429
-f1_score(y_train,y_train_pred_logreg) #0.9131
-roc_auc_score(y_train,y_train_pred_logreg) #0.9103
-# Nonlinear SVC
-#from sklearn.svm import SVC
-#polysvm = SVC(kernel='poly',degree=10,coef0=100,C=1)
-#y_train_pred_polysvm = cross_val_predict(polysvm,x_train,y_train,cv=5) 
+linsvm_clf = LinearSVC(C=1,loss='hinge')
+# SIMPLE UPSAMPLING --------------------------------------------------------
+y_train_pred_linsvm = cross_val_predict(linsvm_clf,train_upsampled,y_train_upsampled,cv=5) 
+# confusion matrix
+confusion_matrix(y_train_upsampled,y_train_pred_linsvm)
+#array([[7489, 1030],
+#       [ 603, 7916]], dtype=int64)
+# precision 
+precision_score(y_train_upsampled,y_train_pred_linsvm) #0.88
+# recall
+recall_score(y_train_upsampled,y_train_pred_linsvm) #0.93
+# f1 
+f1_score(y_train_upsampled,y_train_pred_linsvm) #0.91
+# ROC curve 
+roc_auc_score(y_train_upsampled,y_train_pred_linsvm) #0.9042
+# SMOTE UPSAMPLING --------------------------------------------------------
+y_train_pred_linsvm_smo = cross_val_predict(linsvm_clf,oversampled_trainX,oversampled_trainY,cv=5) 
+# confusion matrix
+confusion_matrix(oversampled_trainY,y_train_pred_linsvm_smo)
+#array([[7525,  994],
+#       [ 443, 8076]], dtype=int64)
+# precision 
+precision_score(oversampled_trainY,y_train_pred_linsvm_smo) #0.8904
+# recall
+recall_score(oversampled_trainY,y_train_pred_linsvm_smo) #0.9480
+# f1 
+f1_score(oversampled_trainY,y_train_pred_linsvm_smo) #0.9183
+# ROC curve 
+roc_auc_score(oversampled_trainY,y_train_pred_linsvm_smo) #0.9157
+
+## Nonlinear SVC --------------------------------------------------------------------------------
+from sklearn.svm import SVC
+polysvm = SVC(kernel='poly',degree=5,coef0=100,C=1)
+# SIMPLE UPSAMPLING --------------------------------------------------------
+y_train_pred_polysvm = cross_val_predict(linsvm_clf,train_upsampled,y_train_upsampled,cv=5) 
+# confusion matrix
+confusion_matrix(y_train_upsampled,y_train_pred_polysvm)
+#array([[7488, 1031],
+#       [ 603, 7916]], dtype=int64)
+# precision 
+precision_score(y_train_upsampled,y_train_pred_polysvm) #0.8848
+# recall
+recall_score(y_train_upsampled,y_train_pred_polysvm) #0.9292
+# f1 
+f1_score(y_train_upsampled,y_train_pred_polysvm) #0.9065
+# ROC curve 
+roc_auc_score(y_train_upsampled,y_train_pred_polysvm) #0.9041
+# SMOTE UPSAMPLING --------------------------------------------------------
+y_train_pred_polysvm_smo = cross_val_predict(polysvm,oversampled_trainX,oversampled_trainY,cv=5) 
+# confusion matrix
+confusion_matrix(oversampled_trainY,y_train_pred_polysvm_smo)
+#array([[7625,  894],
+#       [ 394, 8125]], dtype=int64) 
+precision_score(oversampled_trainY,y_train_pred_polysvm_smo) #0.9009
+# recall
+recall_score(oversampled_trainY,y_train_pred_polysvm_smo) #0.9538
+# f1 
+f1_score(oversampled_trainY,y_train_pred_polysvm_smo) #0.9266
+# ROC curve 
+roc_auc_score(oversampled_trainY,y_train_pred_polysvm_smo) #0.9244
 
 
 ## Random Forest
 from sklearn.ensemble import RandomForestClassifier 
 rf_clf = RandomForestClassifier(random_state=25)
-y_train_pred_rfclf = cross_val_predict(rf_clf,x_train,y_train,cv=5)
-confusion_matrix(y_train,y_train_pred_rfclf)
-precision_score(y_train,y_train_pred_rfclf) #0.9797
-recall_score(y_train,y_train_pred_rfclf) #1.0
-f1_score(y_train,y_train_pred_rfclf) #0.9897
-roc_auc_score(y_train,y_train_pred_rfclf) #0.9896
+# SIMPLE UPSAMPLING --------------------------------------------------------
+y_train_pred_rfclf = cross_val_predict(rf_clf,train_upsampled,y_train_upsampled,cv=5) 
+# confusion matrix
+confusion_matrix(y_train_upsampled,y_train_pred_rfclf)
+#array([[8344,  175],
+#       [   0, 8519]], dtype=int64)
+# precision 
+precision_score(y_train_upsampled,y_train_pred_rfclf) #0.9799
+# recall
+recall_score(y_train_upsampled,y_train_pred_rfclf) #1
+# f1 
+f1_score(y_train_upsampled,y_train_pred_rfclf) #0.9898
+# ROC curve 
+roc_auc_score(y_train_upsampled,y_train_pred_rfclf) #0.9897
+# SMOTE UPSAMPLING --------------------------------------------------------
+y_train_pred_rfclf_smo = cross_val_predict(rf_clf,oversampled_trainX,oversampled_trainY,cv=5) 
+# confusion matrix
+confusion_matrix(oversampled_trainY,y_train_pred_rfclf_smo)
+#array([[8158,  361],
+#       [ 161, 8358]], dtype=int64)
+# precision 
+precision_score(oversampled_trainY,y_train_pred_rfclf_smo) #0.9586
+# recall
+recall_score(oversampled_trainY,y_train_pred_rfclf_smo) #0.9811
+# f1 
+f1_score(oversampled_trainY,y_train_pred_rfclf_smo) #0.9697
+# ROC curve 
+roc_auc_score(oversampled_trainY,y_train_pred_rfclf_smo) #0.9636
+
+
+## Naive Bayes
+from sklearn.naive_bayes import GaussianNB  
+gnb_clf = GaussianNB()
+# SIMPLE UPSAMPLING --------------------------------------------------------
+y_train_pred_gnb = cross_val_predict(gnb_clf,train_upsampled,y_train_upsampled,cv=5) 
+# confusion matrix
+confusion_matrix(y_train_upsampled,y_train_pred_gnb)
+#array([[6646, 1873],
+#       [ 764, 7755]], dtype=int64)
+# precision 
+precision_score(y_train_upsampled,y_train_pred_gnb) #0.8055
+# recall
+recall_score(y_train_upsampled,y_train_pred_gnb) #0.9103
+# f1 
+f1_score(y_train_upsampled,y_train_pred_gnb) #0.8546
+# ROC curve 
+roc_auc_score(y_train_upsampled,y_train_pred_gnb) #0.8452
+# SMOTE UPSAMPLING --------------------------------------------------------
+y_train_pred_gnb_smo = cross_val_predict(gnb_clf,oversampled_trainX,oversampled_trainY,cv=5) 
+# confusion matrix
+confusion_matrix(oversampled_trainY,y_train_pred_gnb_smo)
+#array([[6673, 1846],
+#       [ 672, 7847]], dtype=int64)
+# precision 
+precision_score(oversampled_trainY,y_train_pred_gnb_smo) #0.8096
+# recall
+recall_score(oversampled_trainY,y_train_pred_gnb_smo) #0.9211
+# f1 
+f1_score(oversampled_trainY,y_train_pred_gnb_smo) #0.8617
+# ROC curve 
+roc_auc_score(oversampled_trainY,y_train_pred_gnb_smo) #0.8522
+
+
+## Gradient Boosting Machine
+from sklearn.ensemble import GradientBoostingClassifier
+gbc_sm = GradientBoostingClassifier(random_state=25)
+# SIMPLE UPSAMPLING --------------------------------------------------------
+y_train_pred_gbc = cross_val_predict(gbc_sm,train_upsampled,y_train_upsampled,cv=5) 
+# confusion matrix
+confusion_matrix(y_train_upsampled,y_train_pred_gbc)
+#array([[7785,  734],
+#       [ 257, 8262]], dtype=int64)
+# precision 
+precision_score(y_train_upsampled,y_train_pred_gbc) #0.9184
+# recall
+recall_score(y_train_upsampled,y_train_pred_gbc) #0.9698
+# f1 
+f1_score(y_train_upsampled,y_train_pred_gbc) #0.9434
+# ROC curve 
+roc_auc_score(y_train_upsampled,y_train_pred_gbc) #0.9418
+# SMOTE UPSAMPLING --------------------------------------------------------
+y_train_pred_gbc_smo = cross_val_predict(gbc_sm,oversampled_trainX,oversampled_trainY,cv=5) 
+# confusion matrix
+confusion_matrix(oversampled_trainY,y_train_pred_gbc_smo)
+#array([[7863,  656],
+#       [ 350, 8169]], dtype=int64)
+# precision 
+precision_score(oversampled_trainY,y_train_pred_gbc_smo) #0.9257
+# recall
+recall_score(oversampled_trainY,y_train_pred_gbc_smo) #0.9589
+# f1 
+f1_score(oversampled_trainY,y_train_pred_gbc_smo) #0.9420
+# ROC curve 
+roc_auc_score(oversampled_trainY,y_train_pred_gbc_smo) #0.9409
 
 
 ## AdaBoost
 from sklearn.ensemble import AdaBoostClassifier
-ab_clf = AdaBoostClassifier(random_state=25)
-y_train_pred_abc = cross_val_predict(ab_clf,x_train,y_train,cv=5)
-confusion_matrix(y_train,y_train_pred_abc)
-precision_score(y_train,y_train_pred_abc) #0.903
-recall_score(y_train,y_train_pred_abc) #0.9377
-f1_score(y_train,y_train_pred_abc) #0.92
-roc_auc_score(y_train,y_train_pred_abc) #0.9185
+ab_sm = AdaBoostClassifier(random_state=25)
+# SIMPLE UPSAMPLING --------------------------------------------------------
+y_train_pred_ab = cross_val_predict(ab_sm,train_upsampled,y_train_upsampled,cv=5) 
+# confusion matrix
+confusion_matrix(y_train_upsampled,y_train_pred_ab)
+#array([[7694,  825],
+#       [ 698, 7821]], dtype=int64)
+# precision 
+precision_score(y_train_upsampled,y_train_pred_ab) #0.9046
+# recall
+recall_score(y_train_upsampled,y_train_pred_ab) #0.9181
+# f1 
+f1_score(y_train_upsampled,y_train_pred_ab) #0.9112
+# ROC curve 
+roc_auc_score(y_train_upsampled,y_train_pred_ab) #0.9106
+# SMOTE UPSAMPLING --------------------------------------------------------
+y_train_pred_ab_smo = cross_val_predict(ab_sm,oversampled_trainX,oversampled_trainY,cv=5) 
+# confusion matrix
+confusion_matrix(oversampled_trainY,y_train_pred_ab_smo)
+#array([[7736,  783],
+#       [ 580, 7939]], dtype=int64)
+# precision 
+precision_score(oversampled_trainY,y_train_pred_ab_smo) #0.9102
+# recall
+recall_score(oversampled_trainY,y_train_pred_ab_smo) #0.9319
+# f1 
+f1_score(oversampled_trainY,y_train_pred_ab_smo) #0.9209
+# ROC curve 
+roc_auc_score(oversampled_trainY,y_train_pred_ab_smo) #0.9200
+
+
+
+
+
+
+
+## TEST ON VALID DATA ------------------------------------------------------------------
+## RANDOM FOREST
+# SIMPLE OVERSAMPLING
+rf_clf_so = RandomForestClassifier(random_state=25)
+rf_clf_so.fit(train_upsampled,y_train_upsampled)
+y_so_pred = rf_clf_so.predict(x_valid)
+# precision 
+precision_score(y_valid,y_so_pred) #0.6556
+# recall
+recall_score(y_valid,y_so_pred) #0.4538
+# f1 
+f1_score(y_valid,y_so_pred) #0.5364
+# ROC curve 
+roc_auc_score(y_valid,y_so_pred) #0.7197
+# SMOTE OVERSAMPLING
+rf_clf_smo = RandomForestClassifier(random_state=25)
+rf_clf_smo.fit(oversampled_trainX,oversampled_trainY)
+y_smo_pred = rf_clf_smo.predict(x_valid)
+y_smo_pred.sum()
+confusion_matrix(y_valid,y_smo_pred)
+# precision 
+precision_score(y_valid,y_smo_pred) #0.4881
+# recall
+recall_score(y_valid,y_smo_pred) #0.6308
+# f1 
+f1_score(y_valid,y_smo_pred) #0.5503
+# ROC curve 
+roc_auc_score(y_valid,y_smo_pred) #0.7953
+
+## GRADIENT BOOSTING MACHINE
+from sklearn.ensemble import GradientBoostingClassifier
+# SIMPLE OVERSAMPLING
+gbc_clf_so = GradientBoostingClassifier(random_state=25)
+gbc_clf_so.fit(train_upsampled,y_train_upsampled)
+y_so_pred = gbc_clf_so.predict(x_valid)
+# precision 
+precision_score(y_valid,y_so_pred) #0.3518
+# recall
+recall_score(y_valid,y_so_pred) #0.8308
+# f1 
+f1_score(y_valid,y_so_pred) #0.4943
+# ROC curve 
+roc_auc_score(y_valid,y_so_pred) #0.8689
+# SMOTE OVERSAMPLING
+gbc_clf_smo = GradientBoostingClassifier(random_state=25)
+gbc_clf_smo.fit(oversampled_trainX,oversampled_trainY)
+y_smo_pred = gbc_clf_smo.predict(x_valid)
+#y_smo_pred.sum()
+confusion_matrix(y_valid,y_smo_pred)
+# precision 
+precision_score(y_valid,y_smo_pred) #0.3745
+# recall
+recall_score(y_valid,y_smo_pred) #0.7923
+# f1 
+f1_score(y_valid,y_smo_pred) #0.5086
+# ROC curve 
+roc_auc_score(y_valid,y_smo_pred) #0.8560
+
+## ADABOOST
+from sklearn.ensemble import AdaBoostClassifier
+# SIMPLE OVERSAMPLING
+ab_clf_so = AdaBoostClassifier(random_state=25)
+ab_clf_so.fit(train_upsampled,y_train_upsampled)
+y_so_pred = ab_clf_so.predict(x_valid)
+# precision 
+precision_score(y_valid,y_so_pred) #0.3294
+# recall
+recall_score(y_valid,y_so_pred) #0.8615
+# f1 
+f1_score(y_valid,y_so_pred) #0.4766
+# ROC curve 
+roc_auc_score(y_valid,y_so_pred) #0.8775
+# SMOTE OVERSAMPLING
+ab_clf_smo = AdaBoostClassifier(random_state=25)
+ab_clf_smo.fit(oversampled_trainX,oversampled_trainY)
+y_smo_pred = ab_clf_smo.predict(x_valid)
+#y_smo_pred.sum()
+confusion_matrix(y_valid,y_smo_pred)
+# precision 
+precision_score(y_valid,y_smo_pred) #0.3588
+# recall
+recall_score(y_valid,y_smo_pred) #0.8307
+# f1 
+f1_score(y_valid,y_smo_pred) #0.5012
+# ROC curve 
+roc_auc_score(y_valid,y_smo_pred) #0.8703
+
+
+## PSVM
+# SIMPLE OVERSAMPLING
+psvm_clf_so = SVC(kernel='poly',degree=5,coef0=100,C=1)
+psvm_clf_so.fit(train_upsampled,y_train_upsampled)
+y_so_pred = psvm_clf_so.predict(x_valid)
+# precision 
+precision_score(y_valid,y_so_pred) #0.2913
+# recall
+recall_score(y_valid,y_so_pred) #0.9231
+# f1 
+f1_score(y_valid,y_so_pred) #0.4428
+# ROC curve 
+roc_auc_score(y_valid,y_so_pred) #0.8933
+# SMOTE OVERSAMPLING
+psvm_clf_smo = SVC(kernel='poly',degree=5,coef0=100,C=1)
+psvm_clf_smo.fit(oversampled_trainX,oversampled_trainY)
+y_smo_pred = psvm_clf_smo.predict(x_valid)
+y_smo_pred.sum()
+confusion_matrix(y_valid,y_smo_pred)
+# precision 
+precision_score(y_valid,y_smo_pred) #0.3333
+# recall
+recall_score(y_valid,y_smo_pred) #0.8846
+# f1 
+f1_score(y_valid,y_smo_pred) #0.4842
+# ROC curve 
+roc_auc_score(y_valid,y_smo_pred) #0.8885
+
+
+
+## Balanced Bagging Classifier -------------------------------------------------------------------
+from sklearn.tree import DecisionTreeClassifier
+from imblearn.ensemble import BalancedBaggingClassifier
+bbc = BalancedBaggingClassifier(base_estimator=DecisionTreeClassifier(),
+                                sampling_strategy='auto',
+                                replacement=False,
+                                random_state=25)
+bbc.fit(x_train,y_train)
+y_train_pred_bbc = bbc.predict(x_train)
+precision_score(y_train,y_train_pred_bbc) #0.46
+recall_score(y_train,y_train_pred_bbc) #0.9765
+roc_auc_score(y_train,y_train_pred_bbc) #0.951
+f1_score(y_train,y_train_pred_bbc) #0.625
+# Valid data
+y_valid_pred_bbc = bbc.predict(x_valid)
+precision_score(y_valid,y_valid_pred_bbc) #0.3652
+recall_score(y_valid,y_valid_pred_bbc) #0.8231
+roc_auc_score(y_valid,y_valid_pred_bbc) #0.868
+f1_score(y_valid,y_valid_pred_bbc) #0.5059
+
+
+
+## Balanced Random Forest Classifier
+from  imblearn.ensemble import BalancedRandomForestClassifier
+brf = BalancedRandomForestClassifier(random_state=25)
+brf.fit(x_train,y_train)
+y_train_pred_brf = brf.predict(x_train)
+precision_score(y_train,y_train_pred_brf) #0.35
+recall_score(y_train,y_train_pred_brf) #0.991
+roc_auc_score(y_train,y_train_pred_brf) #0.9363
+f1_score(y_train,y_train_pred_brf) #0.5199
+# Valid data
+y_valid_pred_brf = brf.predict(x_valid)
+precision_score(y_valid,y_valid_pred_brf) #0.2977
+recall_score(y_valid,y_valid_pred_brf) #0.9
+roc_auc_score(y_valid,y_valid_pred_brf) #0.8855
+f1_score(y_valid,y_valid_pred_brf) #0.4474
 
 
 ## Gradient Boosting Machine
-from sklearn.ensemble import GradientBoostingClassifier 
-gb_clf = GradientBoostingClassifier(random_state=25)
-y_train_pred_gbclf = cross_val_predict(gb_clf,x_train,y_train,cv=5)
-confusion_matrix(y_train,y_train_pred_gbclf)
-precision_score(y_train,y_train_pred_gbclf) #0.912
-recall_score(y_train,y_train_pred_gbclf) #0.9811
-f1_score(y_train,y_train_pred_gbclf) #0.9453
-roc_auc_score(y_train,y_train_pred_gbclf) #0.9432
+from sklearn.ensemble import GradientBoostingClassifier
+gbc = GradientBoostingClassifier(random_state=25)
+gbc.fit(x_train,y_train)
+y_train_pred_gbc = gbc.predict(x_train)
+precision_score(y_train,y_train_pred_gbc) #0.9096
+recall_score(y_train,y_train_pred_gbc) #0.6354
+roc_auc_score(y_train,y_train_pred_gbc) #0.8156
+f1_score(y_train,y_train_pred_gbc) #0.7481
+# Valid data
+y_valid_pred_gbc = gbc.predict(x_valid)
+precision_score(y_valid,y_valid_pred_gbc) #0.6733
+recall_score(y_valid,y_valid_pred_gbc) #0.5231
+roc_auc_score(y_valid,y_valid_pred_gbc) #0.7538
+f1_score(y_valid,y_valid_pred_gbc) #0.5887
 
 
-## Random forest has an extremly superior performance comparered to the other models
-## even with the 2nd best model Gradient Boosting Machine where its precision score is 0.068 higher,
-## its recall score is 0.019 higher, its f1 score is 0.044 higher and its ROC AUC score is 0.0464 higher     
-## We try different parameters to find the most suitable parameters for Random forest model  
-rf_clf
+## AdaBoost
+from sklearn.ensemble import AdaBoostClassifier
+ada_clf = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=200,
+                                 algorithm="SAMME.R", learning_rate=0.5)
+ada_clf.fit(x_train, y_train)
+y_train_pred_ada = ada_clf.predict(x_train)
+precision_score(y_train,y_train_pred_ada) #0.7886
+recall_score(y_train,y_train_pred_ada) #0.5993
+roc_auc_score(y_train,y_train_pred_ada) #0.7944
+f1_score(y_train,y_train_pred_ada) #0.6810
+# Valid data
+y_valid_pred_ada = ada_clf.predict(x_valid)
+precision_score(y_valid,y_valid_pred_ada) #0.6733
+recall_score(y_valid,y_valid_pred_ada) #0.5231
+roc_auc_score(y_valid,y_valid_pred_ada) #0.7538
+f1_score(y_valid,y_valid_pred_ada) #0.5887
+
+## RUBOOST 
+from imblearn.ensemble import RUSBoostClassifier
+rusboost_clf = RUSBoostClassifier(algorithm='SAMME.R',random_state=25)
+rusboost_clf.fit(x_train, y_train)
+y_train_pred_rusb = rusboost_clf.predict(x_train)
+precision_score(y_train,y_train_pred_rusb) #0.2515
+recall_score(y_train,y_train_pred_rusb) #0.2326
+roc_auc_score(y_train,y_train_pred_rusb) #0.5939
+f1_score(y_train,y_train_pred_rusb) #0.2418
+# Valid data
+y_valid_pred_rusb = rusboost_clf.predict(x_valid)
+precision_score(y_valid,y_valid_pred_rusb) #0.2418
+recall_score(y_valid,y_valid_pred_rusb) #0.2846
+roc_auc_score(y_valid,y_valid_pred_rusb) #0.6152
+f1_score(y_valid,y_valid_pred_rusb) #0.2615
+
+
+## MODEL TUNING ----------------------------------------------------------------------------------
+from  imblearn.ensemble import BalancedRandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import make_scorer
+scorer = {'Recall':make_scorer(recall_score),'AUC':make_scorer(roc_auc_score)}
+# Parameters
+param_grid = {
+    'bootstrap': [True],
+    'max_depth': [80, 90, 100, 110],
+    'min_samples_leaf': [3, 4, 5],
+    'min_samples_split': [8, 10, 12],
+    'n_estimators': [100, 200, 300, 1000]
+}
+param_grid = {
+    'bootstrap': [True],
+    'max_depth': [10,20,30],
+    'min_samples_leaf': [2,3],
+    'min_samples_split': [6,8,10],
+    'n_estimators': [600,700,800]
+}
+
+# max_depth = 11
+# min_samples_leaf = 4
+# min_samples_split = 4
+# n_estimators = 10 
+
+# Number of CV
+K = 5
+# Model Tuning
+brf_cv = GridSearchCV(BalancedRandomForestClassifier(random_state=25),param_grid,cv=K,scoring=scorer,
+                   n_jobs = -1, verbose = 2,refit='Recall')
+brf_cv.fit(x_train_set_processed,np.array(y_train_set).ravel())
+brf_cv.best_params_
+#{'bootstrap': True,
+# 'max_depth': 10,
+# 'min_samples_leaf': 2,
+# 'min_samples_split': 8,
+# 'n_estimators': 700}
+brf_cv.best_score_
+# TOP 10 features
+sorted(zip(brf_cv.best_estimator_.feature_importances_,num_vab),reverse=True)
+feat_imp = pd.DataFrame({'Relative Influence':brf_cv.best_estimator_.feature_importances_})
+feat_imp['Feature'] = num_vab
+top_10_obj2 = feat_imp.sort_values(by=['Relative Influence'],ascending=False)[:10]
+top_10_obj2.set_index('Feature',drop=True,inplace=True)
+
+top_10_obj2.plot.barh()
+plt.xlabel('Relative Influence')
+plt.legend('')
+plt.ylabel('')
+
+
+
+auc = brf_cv.cv_results_['mean_test_AUC']
+recall = brf_cv.cv_results_['mean_test_Recall']
+for auc, recall, params in zip(auc, recall, brf_cv.cv_results_['params']):
+    print(auc,recall,params)
+
+
+## TEST DATA --------------------------------------------------------------------------
+final_model_obj2 = brf_cv.best_estimator_
+y_test_predict = final_model_obj2.predict(x_test_set_processed)
+x_test_set_processed.shape
+precision_score(y_test,y_test_predict) #0.3023
+recall_score(y_test,y_test_predict) #0.9657
+roc_auc_score(y_test,y_test_predict) #0.9096
+f1_score(y_test,y_test_predict) #0.4605
+
+
+
+
+#### -------------------------------------- OBJECTIVE 1 ---------------------------------------####
+## DATASETS
+# TRAIN DATA 
+train_x = pd.read_csv('C:/Users/nguye/Documents/TTU/5381/nba/isqs5381_summer19nn/train_x.csv')
+#train_x.columns
+train_y = pd.read_csv('C:/Users/nguye/Documents/TTU/5381/nba/isqs5381_summer19nn/train_y.csv')
+x_train_1 = np.array(train_x) 
+#x_train_1.shape
+y_train_1 = np.array(train_y).ravel()
+#y_train_1.shape
+
+# TEST DATA
+test_x = pd.read_csv('C:/Users/nguye/Documents/TTU/5381/nba/isqs5381_summer19nn/test_x.csv')
+test_y = pd.read_csv('C:/Users/nguye/Documents/TTU/5381/nba/isqs5381_summer19nn/test_y.csv')
+x_test_1 = np.array(test_x) 
+y_test_1 = np.array(test_y).ravel()
+
+
+## SUPPORT VECTOR MACHINE
+from sklearn.svm import SVR
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_squared_error 
+from sklearn.metrics import make_scorer
+scorer = make_scorer(mean_squared_error,greater_is_better=False)
+
+## MODEL TUNING
+# Number of CV
+K = 5
+# Parameters
+parameters = [{'degree':[1,2,3,4,5],'C':[0.1,1,10,100],'gamma':[0.1,0.3,0.5]}]
+# Model Tuning
+svr = GridSearchCV(SVR(kernel='poly'),parameters,cv=K,scoring=scorer)
+svr.fit(x_train_1,y_train_1)
+svr.best_params_
+
+means = svr.cv_results_['mean_test_score']
+stds = svr.cv_results_['std_test_score']
+for mean, std, params in zip(means, stds, svr.cv_results_['params']):
+  #  print('Mean Squared Error:')
+  #  print("%0.3f (+/-%0.03f) for %r"% (-mean, std * 2, params))
+    print('RMSE',np.sqrt(-mean),params)
+    
+## FINAL MODEL
+svr_final = SVR(kernel='poly',C=100,degree=2,gamma=0.5)
+svr_final.fit(x_train_1,y_train_1)
+
+
+## Objective 1 feature importance
+obj1_feature = pd.DataFrame({'Feature':['PTS','DRB','MP','STL','2P%','AST%','G','AST',
+                                        'BLK','FT%'],
+                            'Relative Influence':[51,10,9,6,6,4,3,2,1,0.7]})
+obj1_feature.set_index('Feature',drop=True,inplace=True)
+
+obj1_feature.plot.barh()
+plt.xlabel('Relative Influence')
+plt.legend('')
+plt.ylabel('')
+    
