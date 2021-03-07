@@ -21,7 +21,7 @@ for i in range(1951,2019):
 
 ### FILE FOLDER AND CSV FILE
 file_path = 'C:\\Users\\nguye\\Documents\\TTU\\5381\\nba\\isqs5381_summer19nn\\src'
-file_name = 'NBA_All_Star_Games_addition.csv'
+file_name = 'NBA_All_Star_Games_195051to20172018.csv'
 
 ### CHECK STATUS
 def statuscheck(res):
