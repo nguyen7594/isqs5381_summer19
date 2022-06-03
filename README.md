@@ -1,4 +1,4 @@
-## Predict NBA players' Performance & Popularity
+# Predict NBA players' Performance & Popularity
 <!-- ABOUT THE PROJECT -->
 ## Objective
 Our objective in this study was to apply Data Mining techniques in Sport domain, particularly the most well-known basketball league - National Basketball Association (NBA). 
