@@ -1,4 +1,4 @@
-# Predict NBA players' Performance & Popularity
+# Predicting NBA players Performance & Popularity
 <!-- ABOUT THE PROJECT -->
 ## Business Objective
 The objective of this study was to apply different machine learning and deep learning techniques in Sport domain, particularly the most well-known basketball league - National Basketball Association (NBA). 
